@@ -213,6 +213,14 @@ tempCodeRunnerFile.py
 
 # Marimo
 marimo/_static/
+
+# Local Database & Docker volumes
+oracle-data/
+mariadb-data/
+*.log
+*.tmp
+.env
+
 marimo/_lsp/
 __marimo__/
 
