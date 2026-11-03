@@ -1,0 +1,869 @@
+{
+  "sql_mode": "ORACLE",
+  "probes": [
+    {
+      "id": "T1",
+      "feature": "VARCHAR2 / NUMBER(p,s) / DATE / CHAR column types",
+      "used_in": "all tables",
+      "oracle": "table created",
+      "mariadb_output": "a varchar(10) / b decimal(8,2) / c datetime / d char(1) / e double",
+      "mariadb_error": ""
+    },
+    {
+      "id": "T2",
+      "feature": "DEFAULT seq.NEXTVAL on a column",
+      "used_in": "all tables",
+      "oracle": "1 a / 2 b",
+      "mariadb_output": "1 a / 2 b",
+      "mariadb_error": ""
+    },
+    {
+      "id": "T3",
+      "feature": "DEFAULT SYSDATE",
+      "used_in": "members.join_date",
+      "oracle": "row inserted with current date",
+      "mariadb_output": "1",
+      "mariadb_error": ""
+    },
+    {
+      "id": "T4",
+      "feature": "DEFAULT TRUNC(SYSDATE)",
+      "used_in": "loans.loan_date",
+      "oracle": "table created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TABLE t (d DATE DEFAULT TRUNC(SYSDATE) NOT NULL, x NUMBER) | -------------- |  | ERROR 1901 (HY000) at line 3: Function or expression '\"TRUNC\"()' cannot be used in the DEFAULT clause of `d`"
+    },
+    {
+      "id": "T5",
+      "feature": "DEFAULT USER",
+      "used_in": "book_audit.changed_by",
+      "oracle": "table created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TABLE t (u VARCHAR2(30) DEFAULT USER NOT NULL, x NUMBER) | -------------- |  | ERROR 1054 (42S22) at line 3: Unknown column 'USER' in 'DEFAULT'"
+    },
+    {
+      "id": "T6",
+      "feature": "DEFAULT SYSTIMESTAMP",
+      "used_in": "book_audit.changed_at",
+      "oracle": "table created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TABLE t (ts TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL, x NUMBER) | -------------- |  | ERROR 1054 (42S22) at line 3: Unknown column 'SYSTIMESTAMP' in 'DEFAULT'"
+    },
+    {
+      "id": "T7",
+      "feature": "DEFAULT USER() (MariaDB spelling)",
+      "used_in": "book_audit.changed_by",
+      "oracle": "n/a (rewrite target)",
+      "mariadb_output": "root@localhost",
+      "mariadb_error": ""
+    },
+    {
+      "id": "T8",
+      "feature": "Function-based index ON t(UPPER(col))",
+      "used_in": "ix_books_title",
+      "oracle": "index created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE INDEX ix ON t(UPPER(title)) | -------------- |  | ERROR 1064 (42000) at line 5: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'title))' at line 1"
+    },
+    {
+      "id": "T9",
+      "feature": "CHECK constraints incl. LIKE pattern",
+      "used_in": "members, books, loans, fines",
+      "oracle": "ORA-02290 check constraint violated",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | INSERT INTO t VALUES ('bad') | -------------- |  | ERROR 4025 (23000) at line 5: CONSTRAINT `ck` failed for `probe`.`t`"
+    },
+    {
+      "id": "T10",
+      "feature": "CONSTANT in declaration section",
+      "used_in": "fn_calc_fine",
+      "oracle": "5",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE FUNCTION f RETURN NUMBER IS c CONSTANT NUMBER := 5; BEGIN RETURN c; END; | -------------- |  | ERROR 4161 (HY000) at line 3: Unknown data type: 'CONSTANT' | -------------- | SELECT f() FROM DUAL | -------------- |  | ERROR 1305 (42000) at line 5: FUNCTION probe.f does not exist"
+    },
+    {
+      "id": "T11",
+      "feature": "%TYPE anchored variables",
+      "used_in": "issue_book",
+      "oracle": "x",
+      "mariadb_output": "x",
+      "mariadb_error": ""
+    },
+    {
+      "id": "T12",
+      "feature": "%ROWTYPE record",
+      "used_in": "(guide example)",
+      "oracle": "1 q",
+      "mariadb_output": "1 q",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F1",
+      "feature": "TRUNC(date)",
+      "used_in": "fn_calc_fine, issue_book, views",
+      "oracle": "2026-09-20 00:00:00",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT TRUNC(TIMESTAMP'2026-09-20 15:30:00') FROM DUAL | -------------- |  | ERROR 1305 (42000) at line 3: FUNCTION probe.TRUNC does not exist"
+    },
+    {
+      "id": "F2",
+      "feature": "DATE - DATE gives days",
+      "used_in": "fn_calc_fine, v_overdue_loans",
+      "oracle": "5",
+      "mariadb_output": "5",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F2b",
+      "feature": "DATE - DATE on DATE-typed variables",
+      "used_in": "fn_calc_fine",
+      "oracle": "5 / 6",
+      "mariadb_output": "5000000 76000000",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F2c",
+      "feature": "DATEDIFF(a,b) (rewrite target)",
+      "used_in": "fn_calc_fine",
+      "oracle": "n/a (rewrite target)",
+      "mariadb_output": "6",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F3",
+      "feature": "DATE + n adds days",
+      "used_in": "issue_book",
+      "oracle": "2026-11-03",
+      "mariadb_output": "20261034",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F3b",
+      "feature": "DATE + n on a DATE variable",
+      "used_in": "issue_book",
+      "oracle": "2026-11-03",
+      "mariadb_output": "2026-10-20 00:00:14",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F4",
+      "feature": "NVL",
+      "used_in": "fn_member_dues",
+      "oracle": "0 3",
+      "mariadb_output": "0 3",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F5",
+      "feature": "DECODE",
+      "used_in": "(guide example)",
+      "oracle": "two null-match",
+      "mariadb_output": "two null-match",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F6",
+      "feature": "|| string concatenation",
+      "used_in": "views, issue_book",
+      "oracle": "ab1",
+      "mariadb_output": "ab1",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F7",
+      "feature": "CASE expression in PL/SQL RETURN",
+      "used_in": "fn_loan_days",
+      "oracle": "1 2",
+      "mariadb_output": "1 2",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F8",
+      "feature": "SYSDATE / DUAL",
+      "used_in": "everywhere",
+      "oracle": "1",
+      "mariadb_output": "1",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F9",
+      "feature": "LISTAGG(x, ', ') WITHIN GROUP (ORDER BY x)",
+      "used_in": "v_book_catalog",
+      "oracle": "1 a, b",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT g, LISTAGG(n, ', ') WITHIN GROUP (ORDER BY n) FROM t GROUP BY g | -------------- |  | ERROR 1064 (42000) at line 7: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '(ORDER BY n) FROM t GROUP BY g' at line 1"
+    },
+    {
+      "id": "F9b",
+      "feature": "GROUP_CONCAT(x ORDER BY x SEPARATOR ', ') (rewrite target)",
+      "used_in": "v_book_catalog",
+      "oracle": "n/a (rewrite target)",
+      "mariadb_output": "1 a, b / 2 NULL",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F10",
+      "feature": "FETCH FIRST n ROWS ONLY",
+      "used_in": "Q5",
+      "oracle": "4 3 2",
+      "mariadb_output": "4 / 3 / 2",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F11",
+      "feature": "Derived table without alias",
+      "used_in": "Q9",
+      "oracle": "1",
+      "mariadb_output": "1",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F12",
+      "feature": "RANK() OVER (PARTITION BY ...)",
+      "used_in": "Q9",
+      "oracle": "a 5 1 / a 3 2 / b 1 1",
+      "mariadb_output": "a 5 1 / a 3 2 / b 1 1",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F13",
+      "feature": "DATE 'yyyy-mm-dd' literal",
+      "used_in": "04_data",
+      "oracle": "2026-08-01",
+      "mariadb_output": "2026-08-01",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P1",
+      "feature": "IN / OUT parameters, positional call",
+      "used_in": "issue_book",
+      "oracle": "42",
+      "mariadb_output": "42",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P2",
+      "feature": "Named parameter call  p(a => 1)",
+      "used_in": "D1 demo",
+      "oracle": "42",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | DECLARE r NUMBER; BEGIN p(a => 21, b => r); SELECT r FROM DUAL; END; | -------------- |  | ERROR 1327 (42000) at line 5: Undeclared variable: a"
+    },
+    {
+      "id": "P3",
+      "feature": "Parameter DEFAULT value, omitted in call",
+      "used_in": "return_book",
+      "oracle": "11",
+      "mariadb_output": "11",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P4",
+      "feature": "Parameter DEFAULT TRUNC(SYSDATE)",
+      "used_in": "return_book",
+      "oracle": "today 00:00:00",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | BEGIN p(); END; | -------------- |  | ERROR 1305 (42000) at line 5: FUNCTION probe.TRUNC does not exist"
+    },
+    {
+      "id": "P5",
+      "feature": "SELECT ... INTO ... FOR UPDATE",
+      "used_in": "issue_book",
+      "oracle": "7",
+      "mariadb_output": "7",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P6",
+      "feature": "INSERT ... RETURNING col INTO var",
+      "used_in": "issue_book",
+      "oracle": "1",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | DECLARE v NUMBER; BEGIN INSERT INTO t (x) VALUES (1) RETURNING id INTO v; SELECT v FROM DUAL; END; | -------------- |  | ERROR 1064 (42000) at line 7: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'INTO v; SELECT v FROM DUAL; END' at line 1"
+    },
+    {
+      "id": "P6b",
+      "feature": "INSERT ... RETURNING col (no INTO, MariaDB form)",
+      "used_in": "issue_book",
+      "oracle": "n/a",
+      "mariadb_output": "1",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P6c",
+      "feature": "seq.CURRVAL after insert (rewrite target)",
+      "used_in": "issue_book",
+      "oracle": "n/a (rewrite target)",
+      "mariadb_output": "2",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P7",
+      "feature": "RAISE_APPLICATION_ERROR(-20001, msg)",
+      "used_in": "issue_book, return_book, pay_fine",
+      "oracle": "ORA-20001: Member is suspended.",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | BEGIN RAISE_APPLICATION_ERROR(-20001, 'Member is suspended.'); END; | -------------- |  | ERROR 1305 (42000) at line 3: PROCEDURE probe.RAISE_APPLICATION_ERROR does not exist"
+    },
+    {
+      "id": "P7b",
+      "feature": "SIGNAL SQLSTATE (rewrite target)",
+      "used_in": "issue_book",
+      "oracle": "n/a (rewrite target)",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | BEGIN SIGNAL SQLSTATE '45000' SET MYSQL_ERRNO = 20001, MESSAGE_TEXT = 'Member is suspended.'; END; | -------------- |  | ERROR 20001 (45000) at line 3: Member is suspended."
+    },
+    {
+      "id": "P8",
+      "feature": "SQL%ROWCOUNT after UPDATE",
+      "used_in": "return_book, pay_fine",
+      "oracle": "2",
+      "mariadb_output": "2",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P9",
+      "feature": "EXCEPTION WHEN NO_DATA_FOUND",
+      "used_in": "issue_book",
+      "oracle": "caught",
+      "mariadb_output": "caught",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P10",
+      "feature": "WHEN OTHERS ... RAISE (re-raise)",
+      "used_in": "issue_book",
+      "oracle": "ORA-20009: inner",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | BEGIN BEGIN RAISE_APPLICATION_ERROR(-20009,'inner'); EXCEPTION WHEN OTHERS THEN RAISE; END; END; | -------------- |  | ERROR 1305 (42000) at line 3: PROCEDURE probe.RAISE_APPLICATION_ERROR does not exist"
+    },
+    {
+      "id": "P11",
+      "feature": "SQLERRM in handler",
+      "used_in": "D2-D5 demos",
+      "oracle": "-20002 ORA-20002: No copies available.",
+      "mariadb_output": "1305 PROCEDURE probe.RAISE_APPLICATION_ERROR does not exist",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P12",
+      "feature": "COMMIT / ROLLBACK inside procedure",
+      "used_in": "issue_book, return_book, pay_fine",
+      "oracle": "2",
+      "mariadb_output": "1 / 2",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P13",
+      "feature": "Explicit CURSOR + cursor FOR loop",
+      "used_in": "D7 demo",
+      "oracle": "3",
+      "mariadb_output": "3",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P14",
+      "feature": "Implicit cursor FOR loop  FOR r IN (SELECT ...)",
+      "used_in": "01_drop",
+      "oracle": "3",
+      "mariadb_output": "3",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P15",
+      "feature": "EXECUTE IMMEDIATE dynamic DDL",
+      "used_in": "01_drop",
+      "oracle": "table dropped",
+      "mariadb_output": "",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P16",
+      "feature": "Nested block with outer EXCEPTION",
+      "used_in": "D2-D5 demos",
+      "oracle": "outer caught (ZERO_DIVIDE)",
+      "mariadb_output": "",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P17",
+      "feature": "DBMS_OUTPUT.PUT_LINE",
+      "used_in": "06_queries demos",
+      "oracle": "hello on server output",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | BEGIN DBMS_OUTPUT.PUT_LINE('hello'); END; | -------------- |  | ERROR 1305 (42000) at line 3: PROCEDURE DBMS_OUTPUT.PUT_LINE does not exist"
+    },
+    {
+      "id": "P18",
+      "feature": "END name; labelled unit end",
+      "used_in": "all PL/SQL units",
+      "oracle": "1",
+      "mariadb_output": "1",
+      "mariadb_error": ""
+    },
+    {
+      "id": "P19",
+      "feature": "Function call without parentheses in SQL",
+      "used_in": "views (fn_x(...) only)",
+      "oracle": "1",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT f FROM DUAL | -------------- |  | ERROR 1054 (42S22) at line 5: Unknown column 'f' in 'SELECT'"
+    },
+    {
+      "id": "R1",
+      "feature": "Row trigger with :NEW / :OLD",
+      "used_in": "all triggers",
+      "oracle": "5",
+      "mariadb_output": "5",
+      "mariadb_error": ""
+    },
+    {
+      "id": "R2",
+      "feature": "Trigger WHEN (condition) clause",
+      "used_in": "trg_loans_ai, trg_loans_au_return",
+      "oracle": "trigger created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TRIGGER tr AFTER INSERT ON t FOR EACH ROW WHEN (NEW.a > 0) BEGIN NULL; END; | -------------- |  | ERROR 1064 (42000) at line 5: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'WHEN (NEW.a > 0) BEGIN NULL; END' at line 1"
+    },
+    {
+      "id": "R3",
+      "feature": "AFTER UPDATE OF column ON t",
+      "used_in": "trg_loans_au_return, trg_books_audit",
+      "oracle": "trigger created",
+      "mariadb_output": "",
+      "mariadb_error": ""
+    },
+    {
+      "id": "R4",
+      "feature": "Multi-event trigger INSERT OR UPDATE OR DELETE",
+      "used_in": "trg_books_audit",
+      "oracle": "trigger created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TRIGGER tr AFTER INSERT OR DELETE ON t FOR EACH ROW BEGIN NULL; END; | -------------- |  | ERROR 1064 (42000) at line 5: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'OR DELETE ON t FOR EACH ROW BEGIN NULL; END' at line 1"
+    },
+    {
+      "id": "R5",
+      "feature": "INSERTING / UPDATING / DELETING predicates",
+      "used_in": "trg_books_audit",
+      "oracle": "ins",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TRIGGER tr AFTER INSERT ON t FOR EACH ROW BEGIN IF INSERTING THEN INSERT INTO l VALUES ('ins'); END IF; END; | -------------- |  | ERROR 1327 (42000) at line 7: Undeclared variable: INSERTING"
+    },
+    {
+      "id": "R6",
+      "feature": "DECLARE section inside trigger body",
+      "used_in": "trg_loans_au_return",
+      "oracle": "8",
+      "mariadb_output": "8",
+      "mariadb_error": ""
+    },
+    {
+      "id": "R7",
+      "feature": "Trigger calling a stored function",
+      "used_in": "trg_loans_au_return",
+      "oracle": "2",
+      "mariadb_output": "2",
+      "mariadb_error": ""
+    },
+    {
+      "id": "D1",
+      "feature": "DROP TABLE ... CASCADE CONSTRAINTS PURGE",
+      "used_in": "01_drop",
+      "oracle": "table dropped",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | DROP TABLE t CASCADE CONSTRAINTS PURGE | -------------- |  | ERROR 1064 (42000) at line 5: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'CONSTRAINTS PURGE' at line 1"
+    },
+    {
+      "id": "D2",
+      "feature": "user_tables / user_sequences / user_objects views",
+      "used_in": "01_drop",
+      "oracle": "rows",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT table_name FROM user_tables | -------------- |  | ERROR 1146 (42S02) at line 3: Table 'probe.user_tables' doesn't exist"
+    },
+    {
+      "id": "D3",
+      "feature": "CREATE OR REPLACE VIEW",
+      "used_in": "05_views",
+      "oracle": "1",
+      "mariadb_output": "1",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N1",
+      "feature": "'' IS NULL",
+      "used_in": "silent trap",
+      "oracle": "NULL",
+      "mariadb_output": "NOT NULL",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N2",
+      "feature": "NVL('', 'x')",
+      "used_in": "silent trap",
+      "oracle": "x",
+      "mariadb_output": "",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N3",
+      "feature": "LENGTH('')",
+      "used_in": "silent trap",
+      "oracle": "1 (LENGTH is NULL)",
+      "mariadb_output": "0",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N4",
+      "feature": "'' inserted into NOT NULL VARCHAR2 column",
+      "used_in": "members.first_name etc.",
+      "oracle": "ORA-01400 cannot insert NULL",
+      "mariadb_output": "1",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N5",
+      "feature": "'' stored in nullable column, then WHERE col IS NULL",
+      "used_in": "members.phone",
+      "oracle": "1",
+      "mariadb_output": "0",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N6",
+      "feature": "'a' || NULL",
+      "used_in": "views: first_name || ' ' || last_name",
+      "oracle": "ab",
+      "mariadb_output": "ab",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N7",
+      "feature": "CONCAT('a', NULL)",
+      "used_in": "silent trap",
+      "oracle": "a",
+      "mariadb_output": "a",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N8",
+      "feature": "'' = '' comparison",
+      "used_in": "silent trap",
+      "oracle": "NOT TRUE (NULL = NULL)",
+      "mariadb_output": "TRUE",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N9",
+      "feature": "PL/SQL variable assigned ''",
+      "used_in": "silent trap",
+      "oracle": "NULL",
+      "mariadb_output": "NOT NULL",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N10",
+      "feature": "Procedure parameter passed ''",
+      "used_in": "issue_book/fn_loan_days callers",
+      "oracle": "NULL",
+      "mariadb_output": "NOT NULL",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N11",
+      "feature": "fn_loan_days('') falls to ELSE",
+      "used_in": "fn_loan_days",
+      "oracle": "7 7",
+      "mariadb_output": "7 7",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N12",
+      "feature": "COUNT(col) / GROUP_CONCAT over '' values",
+      "used_in": "v_book_catalog, v_member_summary",
+      "oracle": "1",
+      "mariadb_output": "2",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N13",
+      "feature": "TRIM('  ') result",
+      "used_in": "silent trap",
+      "oracle": "NULL",
+      "mariadb_output": "NULL",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N14",
+      "feature": "NUMBER variable arithmetic 0.1 + 0.2 = 0.3",
+      "used_in": "fn_member_dues (NUMBER -> DOUBLE)",
+      "oracle": "equal (NUMBER is exact decimal)",
+      "mariadb_output": "NOT equal",
+      "mariadb_error": ""
+    },
+    {
+      "id": "N15",
+      "feature": "NUMBER(10,2) variable arithmetic 0.1 + 0.2 = 0.3",
+      "used_in": "rewrite target",
+      "oracle": "equal",
+      "mariadb_output": "equal",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X1",
+      "feature": "CONNECT BY hierarchical query",
+      "used_in": "not in corpus",
+      "oracle": "1 1 / 2 2 / 3 3",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT id, LEVEL FROM e START WITH mgr IS NULL CONNECT BY PRIOR id = mgr | -------------- |  | ERROR 1064 (42000) at line 7: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'WITH mgr IS NULL CONNECT BY PRIOR id = mgr' at line 1"
+    },
+    {
+      "id": "X1b",
+      "feature": "WITH RECURSIVE (rewrite target for CONNECT BY)",
+      "used_in": "not in corpus",
+      "oracle": "n/a (rewrite target)",
+      "mariadb_output": "1 1 / 2 2 / 3 3",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X2",
+      "feature": "MERGE INTO ... USING ... WHEN MATCHED",
+      "used_in": "not in corpus",
+      "oracle": "1 9",
+      "mariadb_output": "1 1",
+      "mariadb_error": "-------------- | MERGE INTO t USING (SELECT 1 AS id, 9 AS v FROM DUAL) s ON (t.id = s.id) WHEN MATCHED THEN UPDATE SET t.v = s.v WHEN NOT MATCHED THEN INSERT VALUES (s.id, s.v) | -------------- |  | ERROR 1064 (42000) at line 7: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'INTO t USING (SELECT 1 AS id, 9 AS v FROM DUAL) s ON (t.id = s.id) WHEN MATCH...' at line 1"
+    },
+    {
+      "id": "X2b",
+      "feature": "INSERT ... ON DUPLICATE KEY UPDATE (rewrite target for MERGE)",
+      "used_in": "not in corpus",
+      "oracle": "n/a (rewrite target)",
+      "mariadb_output": "1 9 / 2 5",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X3",
+      "feature": "SELECT ... BULK COLLECT INTO collection",
+      "used_in": "not in corpus",
+      "oracle": "2",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | DECLARE TYPE nt IS TABLE OF NUMBER; v nt; BEGIN SELECT a BULK COLLECT INTO v FROM t; SELECT v.COUNT FROM DUAL; END; | -------------- |  | ERROR 1064 (42000) at line 7: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'TABLE OF NUMBER; v nt; BEGIN SELECT a BULK COLLECT INTO v FROM t; SELECT v.CO...' at line 1"
+    },
+    {
+      "id": "X4",
+      "feature": "FORALL i IN ... INSERT",
+      "used_in": "not in corpus",
+      "oracle": "2",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | DECLARE TYPE nt IS TABLE OF NUMBER INDEX BY PLS_INTEGER; v nt; BEGIN v(1) := 1; v(2) := 2; FORALL i IN 1..2 INSERT INTO t VALUES (v(i)); SELECT COUNT(*) FROM t; END; | -------------- |  | ERROR 1064 (42000) at line 5: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'TABLE OF NUMBER INDEX BY PLS_INTEGER; v nt; BEGIN v(1) := 1; v(2) := 2; FORAL...' at line 1"
+    },
+    {
+      "id": "X5",
+      "feature": "Associative array TABLE OF ... INDEX BY",
+      "used_in": "not in corpus",
+      "oracle": "2 b",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | DECLARE TYPE at IS TABLE OF VARCHAR2(10) INDEX BY PLS_INTEGER; v at; BEGIN v(1) := 'a'; v(5) := 'b'; SELECT v.COUNT, v(5) FROM DUAL; END; | -------------- |  | ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'TABLE OF VARCHAR2(10) INDEX BY PLS_INTEGER; v at; BEGIN v(1) := 'a'; v(5) := ...' at line 1"
+    },
+    {
+      "id": "X5b",
+      "feature": "Associative array INDEX BY INTEGER",
+      "used_in": "not in corpus",
+      "oracle": "2 b",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | DECLARE TYPE at IS TABLE OF VARCHAR2(10) INDEX BY INTEGER; v at; BEGIN v(1) := 'a'; v(5) := 'b'; SELECT v.COUNT, v(5) FROM DUAL; END; | -------------- |  | ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'TABLE OF VARCHAR2(10) INDEX BY INTEGER; v at; BEGIN v(1) := 'a'; v(5) := 'b';...' at line 1"
+    },
+    {
+      "id": "X5c",
+      "feature": "Associative array INDEX BY VARCHAR2",
+      "used_in": "not in corpus",
+      "oracle": "2 2",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | DECLARE TYPE at IS TABLE OF NUMBER INDEX BY VARCHAR2(10); v at; BEGIN v('x') := 1; v('y') := 2; SELECT v.COUNT, v('y') FROM DUAL; END; | -------------- |  | ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'TABLE OF NUMBER INDEX BY VARCHAR2(10); v at; BEGIN v('x') := 1; v('y') := 2; ...' at line 1"
+    },
+    {
+      "id": "X6",
+      "feature": "TYPE ... IS RECORD",
+      "used_in": "not in corpus",
+      "oracle": "1 x",
+      "mariadb_output": "1 x",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X7",
+      "feature": "PRAGMA AUTONOMOUS_TRANSACTION",
+      "used_in": "not in corpus",
+      "oracle": "procedure created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE PROCEDURE p IS PRAGMA AUTONOMOUS_TRANSACTION; BEGIN INSERT INTO t VALUES (1); COMMIT; END; | -------------- |  | ERROR 4161 (HY000) at line 5: Unknown data type: 'AUTONOMOUS_TRANSACTION'"
+    },
+    {
+      "id": "X8",
+      "feature": "Package spec + body with package-level state",
+      "used_in": "not in corpus (package-heavy sources)",
+      "oracle": "1 / 2",
+      "mariadb_output": "1 / 2",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X9",
+      "feature": "User-defined exception + RAISE",
+      "used_in": "not in corpus",
+      "oracle": "caught e_bad",
+      "mariadb_output": "caught e_bad",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X10",
+      "feature": "PRAGMA EXCEPTION_INIT",
+      "used_in": "not in corpus",
+      "oracle": "block runs",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | DECLARE e_dup EXCEPTION; PRAGMA EXCEPTION_INIT(e_dup, -1); BEGIN NULL; END; | -------------- |  | ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'e_dup, -1); BEGIN NULL; END' at line 1"
+    },
+    {
+      "id": "X11",
+      "feature": "Explicit OPEN / FETCH / CLOSE with %NOTFOUND",
+      "used_in": "not in corpus",
+      "oracle": "3",
+      "mariadb_output": "3",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X12",
+      "feature": "SYS_REFCURSOR OUT parameter",
+      "used_in": "not in corpus",
+      "oracle": "procedure created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE PROCEDURE p(rc OUT SYS_REFCURSOR) IS BEGIN OPEN rc FOR SELECT 1 FROM DUAL; END; | -------------- |  | ERROR 4161 (HY000) at line 3: Unknown data type: 'SYS_REFCURSOR'"
+    },
+    {
+      "id": "X13",
+      "feature": "ROWNUM",
+      "used_in": "not in corpus",
+      "oracle": "2 rows",
+      "mariadb_output": "1 / 2",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X14",
+      "feature": "(+) outer join operator",
+      "used_in": "not in corpus",
+      "oracle": "1 1 / 2 NULL",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT a.id, b.id FROM a, b WHERE a.id = b.id(+) ORDER BY a.id | -------------- |  | ERROR 1064 (42000) at line 11: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ') ORDER BY a.id' at line 1"
+    },
+    {
+      "id": "X15",
+      "feature": "MINUS set operator",
+      "used_in": "not in corpus",
+      "oracle": "1",
+      "mariadb_output": "1",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X16",
+      "feature": "TO_CHAR(date, fmt)",
+      "used_in": "not in corpus",
+      "oracle": "2026-01-31",
+      "mariadb_output": "2026-01-31",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X16b",
+      "feature": "TO_DATE(str, fmt)",
+      "used_in": "not in corpus",
+      "oracle": "2026-02-01",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT TO_DATE('2026-02-01','YYYY-MM-DD') FROM DUAL | -------------- |  | ERROR 1305 (42000) at line 3: FUNCTION probe.TO_DATE does not exist"
+    },
+    {
+      "id": "X16c",
+      "feature": "ADD_MONTHS (end-of-month rule)",
+      "used_in": "not in corpus",
+      "oracle": "2026-02-28",
+      "mariadb_output": "2026-02-28",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X16d",
+      "feature": "MONTHS_BETWEEN",
+      "used_in": "not in corpus",
+      "oracle": "2",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT MONTHS_BETWEEN(DATE'2026-03-31', DATE'2026-01-31') FROM DUAL | -------------- |  | ERROR 1305 (42000) at line 3: FUNCTION probe.MONTHS_BETWEEN does not exist"
+    },
+    {
+      "id": "X17",
+      "feature": "NVL2",
+      "used_in": "not in corpus",
+      "oracle": "b",
+      "mariadb_output": "b",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X17b",
+      "feature": "SUBSTR with negative start",
+      "used_in": "not in corpus",
+      "oracle": "ef",
+      "mariadb_output": "ef",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X17c",
+      "feature": "INSTR with occurrence argument (4 args)",
+      "used_in": "not in corpus",
+      "oracle": "4",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT INSTR('a,b,c', ',', 1, 2) FROM DUAL | -------------- |  | ERROR 1582 (42000) at line 3: Incorrect parameter count in the call to native function 'INSTR'"
+    },
+    {
+      "id": "X18",
+      "feature": "UTL_FILE",
+      "used_in": "not in corpus",
+      "oracle": "runs",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | BEGIN UTL_FILE.FCLOSE_ALL; END; | -------------- |  | ERROR 1305 (42000) at line 3: PROCEDURE UTL_FILE.FCLOSE_ALL does not exist"
+    },
+    {
+      "id": "X19",
+      "feature": "CREATE TYPE ... AS OBJECT",
+      "used_in": "not in corpus",
+      "oracle": "type created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TYPE pt AS OBJECT (x NUMBER, y NUMBER) | -------------- |  | ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'TYPE pt AS OBJECT (x NUMBER, y NUMBER)' at line 1"
+    },
+    {
+      "id": "X20",
+      "feature": "GOTO / labels",
+      "used_in": "not in corpus",
+      "oracle": "3",
+      "mariadb_output": "3",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X21",
+      "feature": "SELECT ... INTO raising TOO_MANY_ROWS",
+      "used_in": "not in corpus",
+      "oracle": "caught",
+      "mariadb_output": "caught",
+      "mariadb_error": ""
+    },
+    {
+      "id": "X22",
+      "feature": "Statement-level trigger (no FOR EACH ROW)",
+      "used_in": "not in corpus",
+      "oracle": "trigger created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TRIGGER tr AFTER INSERT ON t BEGIN NULL; END; | -------------- |  | ERROR 1064 (42000) at line 5: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'BEGIN NULL; END' at line 1"
+    },
+    {
+      "id": "X23",
+      "feature": "PIVOT",
+      "used_in": "not in corpus",
+      "oracle": "1 2",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT * FROM t PIVOT (SUM(v) FOR k IN ('a' AS a, 'b' AS b)) | -------------- |  | ERROR 1064 (42000) at line 7: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '(SUM(v) FOR k IN ('a' AS a, 'b' AS b))' at line 1"
+    }
+  ]
+}
