@@ -45,11 +45,11 @@ The same steps are available as `make baseline`, `make probe`, `make load`, `mak
 
 ## Continuing the work
 
-Every rule below keeps `diff -ru corpus/oracle/lms corpus/mariadb/lms` an honest record of the migration.
+Every rule below keeps `diff -ru corpus/oracle/<name> corpus/mariadb/<name>` an honest record of the migration.
 
-**Migrating a new Oracle file** (e.g. the package-heavy source Person 1 adds):
-1. Person 1 puts it in `corpus/oracle/lms/` unchanged. Copy it to `corpus/mariadb/lms/` with the same name.
-2. `make baseline` to see what fails as-is. For each failure, find or add a probe that isolates the feature (below) before changing code.
+**Migrating a new corpus or file** (next up: the HR sample schema in `corpus/oracle/hr/`):
+1. Person 1 puts it in `corpus/oracle/<name>/` unchanged. Copy it to `corpus/mariadb/<name>/` with the same file names.
+2. Run it through `run_objects.py` with the baseline settings (as `make baseline` does for `lms`) to see what fails as-is. For each failure, find or add a probe that isolates the feature (below) before changing code.
 3. Make the smallest change that works, with a `-- MIGRATION: <what> (<why>)` comment above it. If the same Oracle built-in is used in several places, add a shim to `00_compat.sql` instead of editing each call.
 4. Add cases for the object to `verify/cases.json`: happy path, NULL, `''`, a boundary, and every error it can raise.
 5. Add or update the object's row in `COMPATIBILITY_MATRIX.md`, and update the headline counts.
@@ -63,9 +63,9 @@ Every rule below keeps `diff -ru corpus/oracle/lms corpus/mariadb/lms` an honest
 ## Commit convention
 
 One logical part per commit, prefixed by area, so the history can be pushed and reviewed piece by piece:
-`corpus:` (Oracle source), `migrate:` (corpus/mariadb/lms), `probe:`, `verify:`, `tools:`, `docs:`. Commit generated outputs (`probes/`, `verify/results_*.json`, `corpus.diff`) together with the change that produced them.
+`corpus:` (Oracle source), `migrate:` (corpus/mariadb/), `probe:`, `verify:`, `tools:`, `docs:`. Commit generated outputs (`probes/`, `verify/results_*.json`, `corpus.diff`) together with the change that produced them.
 
 ## Hand-offs
 
-- **Person 1 (environment):** pin `mariadb:11.8` and mount `mariadb-oracle.cnf`. The `mariadb` target in the Makefile is a placeholder to replace with the real setup (compose file, Oracle container, healthchecks). The loader needs `requirements.txt`. The Oracle originals live only in `corpus/oracle/lms/` now.
+- **Person 1 (environment):** pin `mariadb:11.8` and mount `mariadb-oracle.cnf`. The `mariadb` target in the Makefile is a placeholder to replace with the real setup (compose file, Oracle container, healthchecks). The loader needs `requirements.txt`. The Oracle originals live only in `corpus/oracle/<name>/`; the LMS corpus is in `corpus/oracle/lms/`, next to `hr/`.
 - **Person 3 (harness and guide):** `verify/cases.json` already holds inputs and Oracle-expected results per object, so run the same cases against the Oracle container. See "Notes for the team" in the matrix for non-deterministic queries and the normalisation needed. `SILENT_DIFFERENCES.md` §1 is the guide's NULL section.
