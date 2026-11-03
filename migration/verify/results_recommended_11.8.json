@@ -1,0 +1,379 @@
+{
+  "sql_mode": "ORACLE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,EMPTY_STRING_IS_NULL",
+  "collation": "utf8mb4_nopad_bin",
+  "autocommit": 0,
+  "results": [
+    {
+      "object": "fn_calc_fine",
+      "case": "returned on due date",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_calc_fine",
+      "case": "returned early",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_calc_fine",
+      "case": "5 days late, same month",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_calc_fine",
+      "case": "6 days late across a month boundary",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_calc_fine",
+      "case": "3 days late across a year boundary",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_calc_fine",
+      "case": "time of day ignored (TRUNC semantics)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_calc_fine",
+      "case": "NULL return date -> 0",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_calc_fine",
+      "case": "NULL due date -> NULL",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_loan_days",
+      "case": "STUDENT",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_loan_days",
+      "case": "FACULTY",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_loan_days",
+      "case": "PUBLIC",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_loan_days",
+      "case": "NULL falls to ELSE",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_loan_days",
+      "case": "empty string falls to ELSE",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_loan_days",
+      "case": "lowercase 'student' is not 'STUDENT' (binary compare)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_loan_days",
+      "case": "trailing space 'STUDENT ' is not 'STUDENT'",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_member_dues",
+      "case": "member with one unpaid fine",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_member_dues",
+      "case": "member whose fine is paid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_member_dues",
+      "case": "unknown member",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fn_member_dues",
+      "case": "NULL member",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "issue_book",
+      "case": "success returns new loan id via OUT param",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "issue_book",
+      "case": "success: dates, PUBLIC period 7 days, stock decremented",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "issue_book",
+      "case": "FACULTY period 30 days",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "issue_book",
+      "case": "suspended member -> -20001",
+      "ok": true,
+      "detail": "error 20001: ORA-20001: Member is suspended."
+    },
+    {
+      "object": "issue_book",
+      "case": "no copies -> -20002",
+      "ok": true,
+      "detail": "error 20002: ORA-20002: No copies available."
+    },
+    {
+      "object": "issue_book",
+      "case": "unpaid fines -> -20003",
+      "ok": true,
+      "detail": "error 20003: ORA-20003: Member has unpaid fines."
+    },
+    {
+      "object": "issue_book",
+      "case": "loan limit (PUBLIC = 2) -> -20004",
+      "ok": true,
+      "detail": "error 20004: ORA-20004: Loan limit of 2 reached."
+    },
+    {
+      "object": "issue_book",
+      "case": "unknown book -> -20005",
+      "ok": true,
+      "detail": "error 20005: ORA-20005: Book or member not found."
+    },
+    {
+      "object": "issue_book",
+      "case": "unknown member -> -20005",
+      "ok": true,
+      "detail": "error 20005: ORA-20005: Book or member not found."
+    },
+    {
+      "object": "issue_book",
+      "case": "NULL book id -> -20005",
+      "ok": true,
+      "detail": "error 20005: ORA-20005: Book or member not found."
+    },
+    {
+      "object": "issue_book",
+      "case": "rejected call leaves no partial changes",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "issue_book",
+      "case": "SQLERRM seen by a PL/SQL caller",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "return_book",
+      "case": "overdue return (default date) restocks and fines",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "return_book",
+      "case": "default return date is today",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "return_book",
+      "case": "on-time return with explicit date -> no fine",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "return_book",
+      "case": "already returned -> -20006",
+      "ok": true,
+      "detail": "error 20006: ORA-20006: Loan not found or already returned."
+    },
+    {
+      "object": "return_book",
+      "case": "unknown loan -> -20006",
+      "ok": true,
+      "detail": "error 20006: ORA-20006: Loan not found or already returned."
+    },
+    {
+      "object": "pay_fine",
+      "case": "pays an open fine",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "pay_fine",
+      "case": "already paid -> -20007",
+      "ok": true,
+      "detail": "error 20007: ORA-20007: Fine not found or already paid."
+    },
+    {
+      "object": "pay_fine",
+      "case": "unknown fine -> -20007",
+      "ok": true,
+      "detail": "error 20007: ORA-20007: Fine not found or already paid."
+    },
+    {
+      "object": "trg_loans_ai",
+      "case": "historical (already returned) loan does not touch stock",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "trg_loans_ai",
+      "case": "open loan decrements stock",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "trg_loans_ai",
+      "case": "loan_date column default is today",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "trg_loans_au_return",
+      "case": "late return via UPDATE creates fine",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "trg_loans_au_return",
+      "case": "updating another column does not restock",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "trg_loans_au_return",
+      "case": "changing an existing return date does not restock again",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "trg_books_audit",
+      "case": "title update is audited",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "trg_books_audit",
+      "case": "non-title update is not audited",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "trg_books_audit",
+      "case": "delete is audited",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "trg_books_audit",
+      "case": "insert audit row: changed_by is the bare user name",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "v_book_catalog",
+      "case": "authors aggregated in name order",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "v_book_catalog",
+      "case": "book without authors -> NULL",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "v_active_loans",
+      "case": "open loans",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "v_overdue_loans",
+      "case": "days overdue and fine so far",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "v_member_summary",
+      "case": "loan counts and dues",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "v_member_summary",
+      "case": "member with no loans (inherited corpus bug: open_loans = 1 on Oracle too)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "ix_books_title",
+      "case": "UPPER(title) lookup uses the index",
+      "ok": true,
+      "detail": "found"
+    },
+    {
+      "object": "ix_books_title",
+      "case": "SELECT * does not expose the helper column",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "members",
+      "case": "empty first_name is rejected (Oracle ORA-01400)",
+      "ok": true,
+      "detail": "error 1048: Column 'first_name' cannot be null"
+    },
+    {
+      "object": "members",
+      "case": "empty phone is stored as NULL",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "members",
+      "case": "lowercase member_type violates CHECK (Oracle ORA-02290)",
+      "ok": true,
+      "detail": "error 4025: CONSTRAINT `ck_members_type` failed for `lms_verify`.`members`"
+    },
+    {
+      "object": "members",
+      "case": "emails differing only in case are distinct",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "fines",
+      "case": "division by zero is an error (Oracle ORA-01476)",
+      "ok": true,
+      "detail": "error 1365: Division by 0"
+    }
+  ]
+}
