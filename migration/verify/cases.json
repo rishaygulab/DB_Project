@@ -1,0 +1,84 @@
+{
+  "_doc": [
+    "Object-level verification cases for the migrated corpus (corpus/mariadb/lms).",
+    "Each case runs on a freshly loaded database (00_compat .. 05_views).",
+    "'steps' run in order; 'expect' is compared with the rows of the LAST step.",
+    "'expect_error' / 'expect_message' must be raised by some step (Oracle: ORA-<n>; MariaDB: error <n>).",
+    "'expect_contains' passes if the text appears anywhere in the last step's rows.",
+    "Tokens: {TODAY}, {TODAY+n}, {DAYS_SINCE:yyyy-mm-dd}, {FINE_SINCE:yyyy-mm-dd} (= days * 5), resolved from the server's CURRENT_DATE.",
+    "Expected values are what Oracle returns for the same input (business rules in corpus/oracle/lms/03_plsql.sql)."
+  ],
+  "cases": [
+    {"object": "fn_calc_fine", "case": "returned on due date", "steps": ["SELECT fn_calc_fine(DATE '2026-09-15', DATE '2026-09-15') FROM DUAL"], "expect": [["0"]]},
+    {"object": "fn_calc_fine", "case": "returned early", "steps": ["SELECT fn_calc_fine(DATE '2026-09-15', DATE '2026-09-10') FROM DUAL"], "expect": [["0"]]},
+    {"object": "fn_calc_fine", "case": "5 days late, same month", "steps": ["SELECT fn_calc_fine(DATE '2026-09-15', DATE '2026-09-20') FROM DUAL"], "expect": [["25"]]},
+    {"object": "fn_calc_fine", "case": "6 days late across a month boundary", "steps": ["SELECT fn_calc_fine(DATE '2026-09-28', DATE '2026-10-04') FROM DUAL"], "expect": [["30"]]},
+    {"object": "fn_calc_fine", "case": "3 days late across a year boundary", "steps": ["SELECT fn_calc_fine(DATE '2026-12-30', DATE '2027-01-02') FROM DUAL"], "expect": [["15"]]},
+    {"object": "fn_calc_fine", "case": "time of day ignored (TRUNC semantics)", "steps": ["SELECT fn_calc_fine(TIMESTAMP '2026-09-15 23:00:00', TIMESTAMP '2026-09-16 01:00:00') FROM DUAL"], "expect": [["5"]]},
+    {"object": "fn_calc_fine", "case": "NULL return date -> 0", "steps": ["SELECT fn_calc_fine(DATE '2026-09-15', NULL) FROM DUAL"], "expect": [["0"]]},
+    {"object": "fn_calc_fine", "case": "NULL due date -> NULL", "steps": ["SELECT fn_calc_fine(NULL, DATE '2026-09-15') FROM DUAL"], "expect": [["NULL"]]},
+
+    {"object": "fn_loan_days", "case": "STUDENT", "steps": ["SELECT fn_loan_days('STUDENT') FROM DUAL"], "expect": [["14"]]},
+    {"object": "fn_loan_days", "case": "FACULTY", "steps": ["SELECT fn_loan_days('FACULTY') FROM DUAL"], "expect": [["30"]]},
+    {"object": "fn_loan_days", "case": "PUBLIC", "steps": ["SELECT fn_loan_days('PUBLIC') FROM DUAL"], "expect": [["7"]]},
+    {"object": "fn_loan_days", "case": "NULL falls to ELSE", "steps": ["SELECT fn_loan_days(NULL) FROM DUAL"], "expect": [["7"]]},
+    {"object": "fn_loan_days", "case": "empty string falls to ELSE", "steps": ["SELECT fn_loan_days('') FROM DUAL"], "expect": [["7"]]},
+    {"object": "fn_loan_days", "case": "lowercase 'student' is not 'STUDENT' (binary compare)", "steps": ["SELECT fn_loan_days('student') FROM DUAL"], "expect": [["7"]]},
+    {"object": "fn_loan_days", "case": "trailing space 'STUDENT ' is not 'STUDENT'", "steps": ["SELECT fn_loan_days('STUDENT ') FROM DUAL"], "expect": [["7"]]},
+
+    {"object": "fn_member_dues", "case": "member with one unpaid fine", "steps": ["SELECT fn_member_dues(5) FROM DUAL"], "expect": [["10"]]},
+    {"object": "fn_member_dues", "case": "member whose fine is paid", "steps": ["SELECT fn_member_dues(1) FROM DUAL"], "expect": [["0"]]},
+    {"object": "fn_member_dues", "case": "unknown member", "steps": ["SELECT fn_member_dues(999) FROM DUAL"], "expect": [["0"]]},
+    {"object": "fn_member_dues", "case": "NULL member", "steps": ["SELECT fn_member_dues(NULL) FROM DUAL"], "expect": [["0"]]},
+
+    {"object": "issue_book", "case": "success returns new loan id via OUT param", "steps": ["DECLARE v NUMBER; BEGIN issue_book(7, 4, 1, v); SELECT v FROM DUAL; END;"], "expect": [["9"]]},
+    {"object": "issue_book", "case": "success: dates, PUBLIC period 7 days, stock decremented", "steps": ["DECLARE v NUMBER; BEGIN issue_book(7, 4, 1, v); END;", "SELECT l.loan_date, l.due_date, b.available_copies FROM loans l JOIN books b ON b.book_id = l.book_id WHERE l.loan_id = 9"], "expect": [["{TODAY}", "{TODAY+7}", "1"]]},
+    {"object": "issue_book", "case": "FACULTY period 30 days", "steps": ["DECLARE v NUMBER; BEGIN issue_book(5, 3, 1, v); END;", "SELECT due_date FROM loans WHERE loan_id = 9"], "expect": [["{TODAY+30}"]]},
+    {"object": "issue_book", "case": "suspended member -> -20001", "steps": ["DECLARE v NUMBER; BEGIN issue_book(4, 6, 1, v); END;"], "expect_error": 20001, "expect_message": "ORA-20001: Member is suspended."},
+    {"object": "issue_book", "case": "no copies -> -20002", "steps": ["DECLARE v NUMBER; BEGIN issue_book(8, 1, 1, v); END;"], "expect_error": 20002, "expect_message": "ORA-20002: No copies available."},
+    {"object": "issue_book", "case": "unpaid fines -> -20003", "steps": ["DECLARE v NUMBER; BEGIN issue_book(5, 5, 1, v); END;"], "expect_error": 20003, "expect_message": "ORA-20003: Member has unpaid fines."},
+    {"object": "issue_book", "case": "loan limit (PUBLIC = 2) -> -20004", "steps": ["DECLARE v NUMBER; BEGIN issue_book(5, 4, 1, v); issue_book(6, 4, 1, v); issue_book(7, 4, 1, v); END;"], "expect_error": 20004, "expect_message": "ORA-20004: Loan limit of 2 reached."},
+    {"object": "issue_book", "case": "unknown book -> -20005", "steps": ["DECLARE v NUMBER; BEGIN issue_book(999, 1, 1, v); END;"], "expect_error": 20005, "expect_message": "ORA-20005: Book or member not found."},
+    {"object": "issue_book", "case": "unknown member -> -20005", "steps": ["DECLARE v NUMBER; BEGIN issue_book(5, 999, 1, v); END;"], "expect_error": 20005, "expect_message": "ORA-20005: Book or member not found."},
+    {"object": "issue_book", "case": "NULL book id -> -20005", "steps": ["DECLARE v NUMBER; BEGIN issue_book(NULL, 1, 1, v); END;"], "expect_error": 20005},
+    {"object": "issue_book", "case": "rejected call leaves no partial changes", "steps": ["BEGIN DECLARE v NUMBER; BEGIN issue_book(4, 6, 1, v); END; EXCEPTION WHEN OTHERS THEN NULL; END;", "SELECT (SELECT COUNT(*) FROM loans), (SELECT available_copies FROM books WHERE book_id = 4) FROM DUAL"], "expect": [["8", "5"]]},
+    {"object": "issue_book", "case": "SQLERRM seen by a PL/SQL caller", "steps": ["BEGIN DECLARE v NUMBER; BEGIN issue_book(4, 6, 1, v); END; EXCEPTION WHEN OTHERS THEN SELECT SQLERRM FROM DUAL; END;"], "expect": [["ORA-20001: Member is suspended."]]},
+
+    {"object": "return_book", "case": "overdue return (default date) restocks and fines", "steps": ["BEGIN return_book(3); END;", "SELECT b.available_copies, f.amount FROM books b, fines f WHERE b.book_id = 3 AND f.loan_id = 3"], "expect": [["3", "{FINE_SINCE:2026-10-04}"]]},
+    {"object": "return_book", "case": "default return date is today", "steps": ["BEGIN return_book(3); END;", "SELECT return_date FROM loans WHERE loan_id = 3"], "expect": [["{TODAY}"]]},
+    {"object": "return_book", "case": "on-time return with explicit date -> no fine", "steps": ["BEGIN return_book(2, DATE '2026-10-25'); END;", "SELECT COUNT(*) FROM fines WHERE loan_id = 2"], "expect": [["0"]]},
+    {"object": "return_book", "case": "already returned -> -20006", "steps": ["BEGIN return_book(1); END;"], "expect_error": 20006, "expect_message": "ORA-20006: Loan not found or already returned."},
+    {"object": "return_book", "case": "unknown loan -> -20006", "steps": ["BEGIN return_book(999); END;"], "expect_error": 20006},
+
+    {"object": "pay_fine", "case": "pays an open fine", "steps": ["BEGIN pay_fine(2); END;", "SELECT paid, paid_date, fn_member_dues(5) FROM fines WHERE fine_id = 2"], "expect": [["Y", "{TODAY}", "0"]]},
+    {"object": "pay_fine", "case": "already paid -> -20007", "steps": ["BEGIN pay_fine(1); END;"], "expect_error": 20007, "expect_message": "ORA-20007: Fine not found or already paid."},
+    {"object": "pay_fine", "case": "unknown fine -> -20007", "steps": ["BEGIN pay_fine(999); END;"], "expect_error": 20007},
+
+    {"object": "trg_loans_ai", "case": "historical (already returned) loan does not touch stock", "steps": ["INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date, return_date) VALUES (7, 4, 1, DATE '2026-01-01', DATE '2026-01-08', DATE '2026-01-05')", "SELECT available_copies FROM books WHERE book_id = 7"], "expect": [["2"]]},
+    {"object": "trg_loans_ai", "case": "open loan decrements stock", "steps": ["INSERT INTO loans (book_id, member_id, staff_id, due_date) VALUES (7, 4, 1, DATE '2099-01-01')", "SELECT available_copies FROM books WHERE book_id = 7"], "expect": [["1"]]},
+    {"object": "trg_loans_ai", "case": "loan_date column default is today", "steps": ["INSERT INTO loans (book_id, member_id, staff_id, due_date) VALUES (7, 4, 1, DATE '2099-01-01')", "SELECT loan_date FROM loans WHERE loan_id = 9"], "expect": [["{TODAY}"]]},
+    {"object": "trg_loans_au_return", "case": "late return via UPDATE creates fine", "steps": ["UPDATE loans SET return_date = DATE '2026-10-21' WHERE loan_id = 8", "SELECT amount FROM fines WHERE loan_id = 8"], "expect": [["10"]]},
+    {"object": "trg_loans_au_return", "case": "updating another column does not restock", "steps": ["UPDATE loans SET due_date = DATE '2026-12-01' WHERE loan_id = 3", "SELECT available_copies, (SELECT COUNT(*) FROM fines) FROM books WHERE book_id = 3"], "expect": [["2", "2"]]},
+    {"object": "trg_loans_au_return", "case": "changing an existing return date does not restock again", "steps": ["UPDATE loans SET return_date = DATE '2026-09-22' WHERE loan_id = 1", "SELECT available_copies FROM books WHERE book_id = 1"], "expect": [["4"]]},
+    {"object": "trg_books_audit", "case": "title update is audited", "steps": ["UPDATE books SET title = 'Nineteen Eighty-Four' WHERE book_id = 4", "SELECT action, old_title, new_title FROM book_audit WHERE book_id = 4 AND action = 'UPDATE'"], "expect": [["UPDATE", "1984", "Nineteen Eighty-Four"]]},
+    {"object": "trg_books_audit", "case": "non-title update is not audited", "steps": ["UPDATE books SET total_copies = 7 WHERE book_id = 4", "SELECT COUNT(*) FROM book_audit WHERE action = 'UPDATE'"], "expect": [["0"]]},
+    {"object": "trg_books_audit", "case": "delete is audited", "steps": ["DELETE FROM books WHERE book_id = 7", "SELECT action, old_title FROM book_audit WHERE book_id = 7 AND action = 'DELETE'"], "expect": [["DELETE", "Introduction to Linear Algebra"]]},
+    {"object": "trg_books_audit", "case": "insert audit row: changed_by is the bare user name", "steps": ["SELECT changed_by FROM book_audit WHERE audit_id = 1"], "expect": [["root"]]},
+
+    {"object": "v_book_catalog", "case": "authors aggregated in name order", "steps": ["SELECT authors FROM v_book_catalog WHERE book_id = 1"], "expect": [["Abraham Silberschatz, Henry F. Korth, S. Sudarshan"]]},
+    {"object": "v_book_catalog", "case": "book without authors -> NULL", "steps": ["SELECT authors FROM v_book_catalog WHERE book_id = 8"], "expect": [["NULL"]]},
+    {"object": "v_active_loans", "case": "open loans", "steps": ["SELECT loan_id, member_name FROM v_active_loans ORDER BY loan_id"], "expect": [["2", "Aarav Sharma"], ["3", "Priya Thapa"], ["4", "Ravi Kumar"], ["7", "Ravi Kumar"], ["8", "Sita Gurung"]]},
+    {"object": "v_overdue_loans", "case": "days overdue and fine so far", "steps": ["SELECT loan_id, days_overdue, fine_so_far FROM v_overdue_loans WHERE loan_id = 3"], "expect": [["3", "{DAYS_SINCE:2026-10-04}", "{FINE_SINCE:2026-10-04}"]]},
+    {"object": "v_member_summary", "case": "loan counts and dues", "steps": ["SELECT total_loans, open_loans, unpaid_fines FROM v_member_summary WHERE member_id = 5"], "expect": [["2", "1", "10"]]},
+    {"object": "v_member_summary", "case": "member with no loans (inherited corpus bug: open_loans = 1 on Oracle too)", "steps": ["SELECT total_loans, open_loans FROM v_member_summary WHERE member_id = 6"], "expect": [["0", "1"]]},
+
+    {"object": "ix_books_title", "case": "UPPER(title) lookup uses the index", "steps": ["EXPLAIN SELECT book_id FROM books WHERE UPPER(title) = '1984'"], "expect_contains": "ix_books_title"},
+    {"object": "ix_books_title", "case": "SELECT * does not expose the helper column", "steps": ["SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'books' AND column_name = 'title_upper' AND extra LIKE '%INVISIBLE%'"], "expect": [["1"]]},
+
+    {"object": "members", "case": "empty first_name is rejected (Oracle ORA-01400)", "steps": ["INSERT INTO members (first_name, last_name, email, member_type) VALUES ('', 'X', 'x1@example.com', 'PUBLIC')"], "expect_error": 1048},
+    {"object": "members", "case": "empty phone is stored as NULL", "steps": ["INSERT INTO members (first_name, last_name, email, phone, member_type) VALUES ('A', 'B', 'x2@example.com', '', 'PUBLIC')", "SELECT COUNT(*) FROM members WHERE email = 'x2@example.com' AND phone IS NULL"], "expect": [["1"]]},
+    {"object": "members", "case": "lowercase member_type violates CHECK (Oracle ORA-02290)", "steps": ["INSERT INTO members (first_name, last_name, email, member_type) VALUES ('A', 'B', 'x3@example.com', 'student')"], "expect_error": 4025},
+    {"object": "members", "case": "emails differing only in case are distinct", "steps": ["INSERT INTO members (first_name, last_name, email, member_type) VALUES ('A', 'B', 'AARAV.SHARMA@example.com', 'PUBLIC')", "SELECT COUNT(*) FROM members WHERE email LIKE '%sharma%' OR email LIKE '%SHARMA%'"], "expect": [["2"]]},
+    {"object": "fines", "case": "division by zero is an error (Oracle ORA-01476)", "steps": ["UPDATE fines SET amount = amount / 0 WHERE fine_id = 1"], "expect_error": 1365}
+  ]
+}

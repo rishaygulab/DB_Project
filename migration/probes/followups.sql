@@ -1,0 +1,23 @@
+-- Follow-up probes: sql_mode contents, transactions, date rewrites, trigger UPDATE OF, error codes.
+SET sql_mode=ORACLE;
+SELECT @@sql_mode AS oracle_mode_expands_to;
+SELECT @@GLOBAL.sql_mode AS server_default, @@autocommit AS autocommit;
+SELECT DATE'2026-10-04' - DATE'2026-09-28' AS literal_cross_month;
+SELECT CAST(TIMESTAMP'2026-09-20 15:30:00' AS DATE) AS cast_as_date, DATE(TIMESTAMP'2026-09-20 15:30:00') AS date_fn;
+SELECT DATE'2026-10-20' + INTERVAL 14 DAY AS plus_interval, ADDDATE(DATE'2026-10-20', 14) AS adddate;
+DROP TABLE IF EXISTS t; CREATE TABLE t (a NUMBER, b NUMBER); DROP TABLE IF EXISTS l; CREATE TABLE l (v VARCHAR2(20));
+DELIMITER $$
+CREATE OR REPLACE TRIGGER tr AFTER UPDATE OF a ON t FOR EACH ROW BEGIN INSERT INTO l VALUES ('fired'); END;
+$$
+DELIMITER ;
+INSERT INTO t VALUES (1,1); UPDATE t SET b = 2;
+SELECT COUNT(*) AS update_of_a_fired_on_b_update FROM l;
+SELECT 1/0 AS div_zero;
+SET sql_mode='ORACLE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO';
+DROP TABLE IF EXISTS z; CREATE TABLE z (a NUMBER);
+INSERT INTO z VALUES (1/0);
+SET sql_mode=ORACLE;
+DELIMITER $$
+BEGIN SIGNAL SQLSTATE '45000' SET MYSQL_ERRNO = 20001, MESSAGE_TEXT = 'Member is suspended.'; EXCEPTION WHEN OTHERS THEN SELECT SQLCODE AS sqlcode_, SQLERRM AS sqlerrm_ FROM DUAL; END;
+$$
+DELIMITER ;

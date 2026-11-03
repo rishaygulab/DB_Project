@@ -1,0 +1,14 @@
+-- MariaDB has no SQL*Plus. The files keep Oracle's '/' terminators so they
+-- diff cleanly against corpus/oracle/lms, and are loaded with the statement runner,
+-- which opens one session with the session settings below:
+--
+--   python3 migration/tools/run_objects.py --reset \
+--     corpus/mariadb/lms/00_compat.sql corpus/mariadb/lms/01_drop.sql corpus/mariadb/lms/02_schema.sql \
+--     corpus/mariadb/lms/03_plsql.sql corpus/mariadb/lms/04_data.sql corpus/mariadb/lms/05_views.sql \
+--     corpus/mariadb/lms/06_queries.sql
+--
+-- Session settings the runner applies (any application connection needs the same):
+--   SET SESSION sql_mode = 'ORACLE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,EMPTY_STRING_IS_NULL';
+--   SET SESSION autocommit = 0;
+--
+-- Load order is the same as corpus/oracle/lms/run_all.sql, plus 00_compat.sql first.

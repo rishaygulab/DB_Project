@@ -1,0 +1,332 @@
+Only in corpus/mariadb/lms: 00_compat.sql
+diff -ru corpus/oracle/lms/01_drop.sql corpus/mariadb/lms/01_drop.sql
+--- corpus/oracle/lms/01_drop.sql	2026-10-29 12:26:31
++++ corpus/mariadb/lms/01_drop.sql	2026-10-29 12:33:29
+@@ -1,30 +1,29 @@
+ -- =============================================================
+--- Library Management System - Oracle
++-- Library Management System - MariaDB 11.8 (sql_mode=ORACLE)
+ -- 01_drop.sql : remove existing objects so the scripts can be re-run
++--
++-- MIGRATION: REDESIGNED. The Oracle version loops over USER_TABLES /
++-- USER_SEQUENCES / USER_OBJECTS (no such views in MariaDB) and uses
++-- DROP TABLE ... CASCADE CONSTRAINTS PURGE (no such syntax). MariaDB has
++-- IF EXISTS on every DROP, so the dictionary loop is not needed at all.
++-- FOREIGN_KEY_CHECKS=0 plays the role of CASCADE CONSTRAINTS.
+ -- =============================================================
+ 
+-BEGIN
+-  FOR t IN (SELECT table_name FROM user_tables
+-            WHERE table_name IN ('BOOK_AUDIT','FINES','LOANS','BOOK_AUTHORS','BOOKS',
+-                                 'CATEGORIES','PUBLISHERS','AUTHORS','STAFF','MEMBERS'))
+-  LOOP
+-    EXECUTE IMMEDIATE 'DROP TABLE ' || t.table_name || ' CASCADE CONSTRAINTS PURGE';
+-  END LOOP;
++SET FOREIGN_KEY_CHECKS = 0;
+ 
+-  FOR s IN (SELECT sequence_name FROM user_sequences
+-            WHERE sequence_name IN ('SEQ_MEMBER','SEQ_AUTHOR','SEQ_PUBLISHER','SEQ_CATEGORY',
+-                                    'SEQ_BOOK','SEQ_STAFF','SEQ_LOAN','SEQ_FINE','SEQ_AUDIT'))
+-  LOOP
+-    EXECUTE IMMEDIATE 'DROP SEQUENCE ' || s.sequence_name;
+-  END LOOP;
++DROP TABLE IF EXISTS book_audit, fines, loans, book_authors, books,
++                     categories, publishers, authors, staff, members;
+ 
+-  FOR o IN (SELECT object_name, object_type FROM user_objects
+-            WHERE object_type IN ('PROCEDURE','FUNCTION','VIEW')
+-              AND object_name IN ('ISSUE_BOOK','RETURN_BOOK','PAY_FINE','FN_CALC_FINE',
+-                                  'FN_MEMBER_DUES','FN_LOAN_DAYS','V_BOOK_CATALOG',
+-                                  'V_ACTIVE_LOANS','V_OVERDUE_LOANS','V_MEMBER_SUMMARY'))
+-  LOOP
+-    EXECUTE IMMEDIATE 'DROP ' || o.object_type || ' ' || o.object_name;
+-  END LOOP;
+-END;
+-/
++DROP SEQUENCE IF EXISTS seq_member, seq_author, seq_publisher, seq_category,
++                        seq_book, seq_staff, seq_loan, seq_fine, seq_audit;
++
++DROP VIEW IF EXISTS v_book_catalog, v_active_loans, v_overdue_loans, v_member_summary;
++
++DROP PROCEDURE IF EXISTS issue_book;
++DROP PROCEDURE IF EXISTS return_book;
++DROP PROCEDURE IF EXISTS pay_fine;
++DROP FUNCTION IF EXISTS fn_calc_fine;
++DROP FUNCTION IF EXISTS fn_member_dues;
++DROP FUNCTION IF EXISTS fn_loan_days;
++
++SET FOREIGN_KEY_CHECKS = 1;
+diff -ru corpus/oracle/lms/02_schema.sql corpus/mariadb/lms/02_schema.sql
+--- corpus/oracle/lms/02_schema.sql	2026-10-29 12:26:31
++++ corpus/mariadb/lms/02_schema.sql	2026-10-29 12:34:06
+@@ -1,5 +1,5 @@
+ -- =============================================================
+--- Library Management System - Oracle (12c or later)
++-- Library Management System - MariaDB 11.8 (sql_mode=ORACLE), migrated from corpus/oracle/lms
+ -- 02_schema.sql : sequences, tables, constraints, indexes
+ -- All tables are in 3NF.
+ -- =============================================================
+@@ -95,7 +95,8 @@
+   book_id     NUMBER NOT NULL,
+   member_id   NUMBER NOT NULL,
+   staff_id    NUMBER NOT NULL,
+-  loan_date   DATE   DEFAULT TRUNC(SYSDATE) NOT NULL,
++  -- MIGRATION: TRUNC(SYSDATE) -> CURRENT_DATE (stored functions are not allowed in DEFAULT)
++  loan_date   DATE   DEFAULT CURRENT_DATE NOT NULL,
+   due_date    DATE   NOT NULL,
+   return_date DATE,
+   CONSTRAINT fk_loans_book   FOREIGN KEY (book_id)   REFERENCES books(book_id),
+@@ -125,14 +126,19 @@
+   action      VARCHAR2(10)  NOT NULL,
+   old_title   VARCHAR2(200),
+   new_title   VARCHAR2(200),
+-  changed_by  VARCHAR2(30)  DEFAULT USER NOT NULL,
+-  changed_at  TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL
++  -- MIGRATION: USER -> user part of USER() ('scott@host' -> 'scott'), same value Oracle stores
++  changed_by  VARCHAR2(30)  DEFAULT (SUBSTRING_INDEX(USER(), '@', 1)) NOT NULL,
++  -- MIGRATION: SYSTIMESTAMP -> CURRENT_TIMESTAMP(6); TIMESTAMP(6) keeps Oracle's default microsecond precision
++  changed_at  TIMESTAMP(6)  DEFAULT CURRENT_TIMESTAMP(6) NOT NULL
+ );
+ 
+ -- ---------- Indexes on foreign keys / frequent search columns ----------
+ CREATE INDEX ix_books_category  ON books(category_id);
+ CREATE INDEX ix_books_publisher ON books(publisher_id);
+-CREATE INDEX ix_books_title     ON books(UPPER(title));
++-- MIGRATION: no function-based indexes. Index an INVISIBLE virtual column instead;
++-- SELECT * does not show it, and the 11.8 optimizer uses it for WHERE UPPER(title) = ...
++ALTER TABLE books ADD title_upper VARCHAR2(200) AS (UPPER(title)) VIRTUAL INVISIBLE;
++CREATE INDEX ix_books_title     ON books(title_upper);
+ CREATE INDEX ix_ba_author       ON book_authors(author_id);
+ CREATE INDEX ix_loans_member    ON loans(member_id);
+ CREATE INDEX ix_loans_book      ON loans(book_id);
+diff -ru corpus/oracle/lms/03_plsql.sql corpus/mariadb/lms/03_plsql.sql
+--- corpus/oracle/lms/03_plsql.sql	2026-10-29 12:26:31
++++ corpus/mariadb/lms/03_plsql.sql	2026-10-29 12:34:10
+@@ -1,5 +1,5 @@
+ -- =============================================================
+--- Library Management System - Oracle
++-- Library Management System - MariaDB 11.8 (sql_mode=ORACLE), migrated from corpus/oracle/lms
+ -- 03_plsql.sql : functions, triggers, stored procedures
+ -- Business rules:
+ --   * Loan period: STUDENT 14 days, FACULTY 30 days, PUBLIC 7 days
+@@ -14,12 +14,14 @@
+   p_return_date IN DATE
+ ) RETURN NUMBER
+ IS
+-  c_rate_per_day CONSTANT NUMBER := 5;
++  -- MIGRATION: CONSTANT keyword not supported; plain variable
++  c_rate_per_day NUMBER := 5;
+ BEGIN
+   IF p_return_date IS NULL OR TRUNC(p_return_date) <= TRUNC(p_due_date) THEN
+     RETURN 0;
+   END IF;
+-  RETURN (TRUNC(p_return_date) - TRUNC(p_due_date)) * c_rate_per_day;
++  -- MIGRATION: DATE - DATE is NOT a day count in MariaDB (silently wrong); use DATEDIFF
++  RETURN DATEDIFF(p_return_date, p_due_date) * c_rate_per_day;
+ END fn_calc_fine;
+ /
+ 
+@@ -58,11 +60,13 @@
+ CREATE OR REPLACE TRIGGER trg_loans_ai
+ AFTER INSERT ON loans
+ FOR EACH ROW
+-WHEN (NEW.return_date IS NULL)
++-- MIGRATION: trigger WHEN (...) clause not supported; moved into the body as IF
+ BEGIN
+-  UPDATE books
+-     SET available_copies = available_copies - 1
+-   WHERE book_id = :NEW.book_id;
++  IF :NEW.return_date IS NULL THEN
++    UPDATE books
++       SET available_copies = available_copies - 1
++     WHERE book_id = :NEW.book_id;
++  END IF;
+ END;
+ /
+ 
+@@ -70,39 +74,54 @@
+ CREATE OR REPLACE TRIGGER trg_loans_au_return
+ AFTER UPDATE OF return_date ON loans
+ FOR EACH ROW
+-WHEN (OLD.return_date IS NULL AND NEW.return_date IS NOT NULL)
++-- MIGRATION: trigger WHEN (...) clause not supported; moved into the body as IF
+ DECLARE
+   v_fine NUMBER;
+ BEGIN
+-  UPDATE books
+-     SET available_copies = available_copies + 1
+-   WHERE book_id = :NEW.book_id;
++  IF :OLD.return_date IS NULL AND :NEW.return_date IS NOT NULL THEN
++    UPDATE books
++       SET available_copies = available_copies + 1
++     WHERE book_id = :NEW.book_id;
+ 
+-  v_fine := fn_calc_fine(:NEW.due_date, :NEW.return_date);
+-  IF v_fine > 0 THEN
+-    INSERT INTO fines (loan_id, amount) VALUES (:NEW.loan_id, v_fine);
++    v_fine := fn_calc_fine(:NEW.due_date, :NEW.return_date);
++    IF v_fine > 0 THEN
++      INSERT INTO fines (loan_id, amount) VALUES (:NEW.loan_id, v_fine);
++    END IF;
+   END IF;
+ END;
+ /
+ 
+ -- ---------- TRIGGER: audit inserts/updates/deletes on BOOKS ----------
+-CREATE OR REPLACE TRIGGER trg_books_audit
+-AFTER INSERT OR DELETE OR UPDATE OF title ON books
++-- MIGRATION: 11.8 has no multi-event triggers (INSERT OR DELETE OR UPDATE) and no
++-- INSERTING/UPDATING/DELETING predicates, so the one trigger becomes three, one per
++-- branch of the original IF. MariaDB 13.0 accepts the original text unchanged.
++CREATE OR REPLACE TRIGGER trg_books_audit_ai
++AFTER INSERT ON books
+ FOR EACH ROW
+ BEGIN
+-  IF INSERTING THEN
+-    INSERT INTO book_audit (book_id, action, new_title)
+-    VALUES (:NEW.book_id, 'INSERT', :NEW.title);
+-  ELSIF UPDATING THEN
+-    INSERT INTO book_audit (book_id, action, old_title, new_title)
+-    VALUES (:NEW.book_id, 'UPDATE', :OLD.title, :NEW.title);
+-  ELSE
+-    INSERT INTO book_audit (book_id, action, old_title)
+-    VALUES (:OLD.book_id, 'DELETE', :OLD.title);
+-  END IF;
++  INSERT INTO book_audit (book_id, action, new_title)
++  VALUES (:NEW.book_id, 'INSERT', :NEW.title);
+ END;
+ /
+ 
++CREATE OR REPLACE TRIGGER trg_books_audit_au
++AFTER UPDATE OF title ON books
++FOR EACH ROW
++BEGIN
++  INSERT INTO book_audit (book_id, action, old_title, new_title)
++  VALUES (:NEW.book_id, 'UPDATE', :OLD.title, :NEW.title);
++END;
++/
++
++CREATE OR REPLACE TRIGGER trg_books_audit_ad
++AFTER DELETE ON books
++FOR EACH ROW
++BEGIN
++  INSERT INTO book_audit (book_id, action, old_title)
++  VALUES (:OLD.book_id, 'DELETE', :OLD.title);
++END;
++/
++
+ -- ---------- PROCEDURE: issue a book to a member ----------
+ CREATE OR REPLACE PROCEDURE issue_book (
+   p_book_id   IN  NUMBER,
+@@ -146,10 +165,12 @@
+     RAISE_APPLICATION_ERROR(-20004, 'Loan limit of ' || v_limit || ' reached.');
+   END IF;
+ 
++  -- MIGRATION: DATE + n adds n SECONDS to a DATE variable in MariaDB (silently wrong); use ADDDATE
+   INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date)
+   VALUES (p_book_id, p_member_id, p_staff_id,
+-          TRUNC(SYSDATE), TRUNC(SYSDATE) + fn_loan_days(v_type))
+-  RETURNING loan_id INTO p_loan_id;
++          TRUNC(SYSDATE), ADDDATE(TRUNC(SYSDATE), fn_loan_days(v_type)));
++  -- MIGRATION: no RETURNING ... INTO in PL/SQL; CURRVAL is per-session, as in Oracle
++  p_loan_id := seq_loan.CURRVAL;
+ 
+   COMMIT;
+ EXCEPTION
+diff -ru corpus/oracle/lms/04_data.sql corpus/mariadb/lms/04_data.sql
+--- corpus/oracle/lms/04_data.sql	2026-10-29 12:26:31
++++ corpus/mariadb/lms/04_data.sql	2026-10-29 12:33:37
+@@ -1,5 +1,5 @@
+ -- =============================================================
+--- Library Management System - Oracle
++-- Library Management System - MariaDB 11.8 (sql_mode=ORACLE), migrated from corpus/oracle/lms
+ -- 04_data.sql : sample data
+ -- Run after 03_plsql.sql so triggers keep stock and fines correct.
+ -- =============================================================
+diff -ru corpus/oracle/lms/05_views.sql corpus/mariadb/lms/05_views.sql
+--- corpus/oracle/lms/05_views.sql	2026-10-29 12:26:31
++++ corpus/mariadb/lms/05_views.sql	2026-10-29 12:34:26
+@@ -1,5 +1,5 @@
+ -- =============================================================
+--- Library Management System - Oracle
++-- Library Management System - MariaDB 11.8 (sql_mode=ORACLE), migrated from corpus/oracle/lms
+ -- 05_views.sql : reporting views
+ -- =============================================================
+ 
+@@ -8,7 +8,8 @@
+ SELECT b.book_id,
+        b.isbn,
+        b.title,
+-       LISTAGG(a.name, ', ') WITHIN GROUP (ORDER BY a.name) AS authors,
++       -- MIGRATION: LISTAGG ... WITHIN GROUP not supported; GROUP_CONCAT is the equivalent
++       GROUP_CONCAT(a.name ORDER BY a.name SEPARATOR ', ') AS authors,
+        c.name  AS category,
+        p.name  AS publisher,
+        b.pub_year,
+@@ -44,7 +45,8 @@
+        m.email,
+        b.title,
+        l.due_date,
+-       TRUNC(SYSDATE) - l.due_date        AS days_overdue,
++       -- MIGRATION: DATE - DATE is not a day count in MariaDB (silently wrong); use DATEDIFF
++       DATEDIFF(SYSDATE, l.due_date)      AS days_overdue,
+        fn_calc_fine(l.due_date, SYSDATE)  AS fine_so_far
+   FROM loans l
+   JOIN members m ON m.member_id = l.member_id
+diff -ru corpus/oracle/lms/06_queries.sql corpus/mariadb/lms/06_queries.sql
+--- corpus/oracle/lms/06_queries.sql	2026-10-29 12:26:31
++++ corpus/mariadb/lms/06_queries.sql	2026-10-29 12:34:27
+@@ -1,10 +1,9 @@
+ -- =============================================================
+--- Library Management System - Oracle
++-- Library Management System - MariaDB 11.8 (sql_mode=ORACLE), migrated from corpus/oracle/lms
+ -- 06_queries.sql : demonstration queries (SQL concepts)
+ -- =============================================================
+-SET LINESIZE 200
+-SET PAGESIZE 100
+-SET SERVEROUTPUT ON
++-- MIGRATION: SQL*Plus formatting commands (SET LINESIZE/PAGESIZE/SERVEROUTPUT) removed;
++-- they are client settings, not SQL. DBMS_OUTPUT comes from 00_compat.sql.
+ 
+ -- Q1. Simple SELECT with WHERE + ORDER BY: CS books, newest first
+ SELECT title, pub_year, available_copies
+@@ -110,7 +109,8 @@
+ DECLARE
+   v_loan_id NUMBER;
+ BEGIN
+-  issue_book(p_book_id => 4, p_member_id => 2, p_staff_id => 1, p_loan_id => v_loan_id);
++  -- MIGRATION: named notation (p => v) not supported; positional call, same order
++  issue_book(4, 2, 1, v_loan_id);
+   DBMS_OUTPUT.PUT_LINE('Issued, loan id = ' || v_loan_id);
+ END;
+ /
+diff -ru corpus/oracle/lms/run_all.sql corpus/mariadb/lms/run_all.sql
+--- corpus/oracle/lms/run_all.sql	2026-10-29 12:26:31
++++ corpus/mariadb/lms/run_all.sql	2026-10-29 12:34:28
+@@ -1,12 +1,14 @@
+--- Run from SQL*Plus / SQLcl in this folder:   @run_all.sql
+--- In SQL Developer: open this file and press F5 (Run Script).
+-SET ECHO ON
+-SET SERVEROUTPUT ON
+-WHENEVER SQLERROR CONTINUE
+-
+-@@01_drop.sql
+-@@02_schema.sql
+-@@03_plsql.sql
+-@@04_data.sql
+-@@05_views.sql
+-@@06_queries.sql
++-- MariaDB has no SQL*Plus. The files keep Oracle's '/' terminators so they
++-- diff cleanly against corpus/oracle/lms, and are loaded with the statement runner,
++-- which opens one session with the session settings below:
++--
++--   python3 migration/tools/run_objects.py --reset \
++--     corpus/mariadb/lms/00_compat.sql corpus/mariadb/lms/01_drop.sql corpus/mariadb/lms/02_schema.sql \
++--     corpus/mariadb/lms/03_plsql.sql corpus/mariadb/lms/04_data.sql corpus/mariadb/lms/05_views.sql \
++--     corpus/mariadb/lms/06_queries.sql
++--
++-- Session settings the runner applies (any application connection needs the same):
++--   SET SESSION sql_mode = 'ORACLE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,EMPTY_STRING_IS_NULL';
++--   SET SESSION autocommit = 0;
++--
++-- Load order is the same as corpus/oracle/lms/run_all.sql, plus 00_compat.sql first.

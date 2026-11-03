@@ -1,0 +1,12 @@
+# Server settings that make MariaDB 11.8 behave like Oracle for this corpus.
+# Mount into the container:  -v $PWD/migration/mariadb-oracle.cnf:/etc/mysql/conf.d/oracle.cnf:ro
+# Every setting below fixes a difference that returns wrong results WITHOUT an error;
+# see migration/SILENT_DIFFERENCES.md for the probe that proves each one.
+[mariadb]
+# ORACLE alone REPLACES the server default and drops strict mode and divide-by-zero errors.
+sql_mode = ORACLE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,EMPTY_STRING_IS_NULL
+# Oracle has no autocommit: work is undone by ROLLBACK and row locks (FOR UPDATE) last until COMMIT.
+autocommit = 0
+# Oracle compares VARCHAR2 binary (case-sensitive) and without blank padding.
+character_set_server = utf8mb4
+collation_server = utf8mb4_nopad_bin

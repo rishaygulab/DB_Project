@@ -1,0 +1,1030 @@
+{
+  "sql_mode": "ORACLE",
+  "autocommit": 1,
+  "results": [
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_member",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_author",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_publisher",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_category",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_book",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_staff",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_loan",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_fine",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_audit",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE members",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE authors",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE publishers",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE categories",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE books",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE book_authors",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1280: Name 'pk_book_authors' ignored for PRIMARY key."
+      ],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE staff",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE loans",
+      "ok": false,
+      "error": "1901: Function or expression '\"TRUNC\"()' cannot be used in the DEFAULT clause of `loan_date`",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE fines",
+      "ok": false,
+      "error": "1005: Can't create table `lms`.`fines` (errno: 150 \"Foreign key constraint is incorrectly formed\")",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE book_audit",
+      "ok": false,
+      "error": "1054: Unknown column 'USER' in 'DEFAULT'",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_books_category",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_books_publisher",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_books_title",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'title))' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_ba_author",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_loans_member",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_loans_book",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_loans_open",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "FUNCTION fn_calc_fine",
+      "ok": false,
+      "error": "4161: Unknown data type: 'CONSTANT'",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "FUNCTION fn_loan_days",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "4161: Unknown data type: 'CONSTANT'"
+      ],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "FUNCTION fn_member_dues",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "4161: Unknown data type: 'CONSTANT'"
+      ],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "TRIGGER trg_loans_ai",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'WHEN (NEW.return_date IS NULL)\nBEGIN\n  UPDATE books\n     SET available_copies...' at line 4",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "TRIGGER trg_loans_au_return",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'WHEN (OLD.return_date IS NULL AND NEW.return_date IS NOT NULL)\nDECLARE\n  v_fi...' at line 4",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "TRIGGER trg_books_audit",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'OR DELETE OR UPDATE OF title ON books\nFOR EACH ROW\nBEGIN\n  IF INSERTING THEN\n...' at line 2",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "PROCEDURE issue_book",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'INTO p_loan_id;\n\n  COMMIT;\nEXCEPTION\n  WHEN NO_DATA_FOUND THEN\n    ROLLBACK;\n...' at line 46",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "PROCEDURE return_book",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'INTO p_loan_id;\n\n  COMMIT;\nEXCEPTION\n  WHEN NO_DATA_FOUND THEN\n    ROLLBACK;\n...' at line 46"
+      ],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "PROCEDURE pay_fine",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'INTO p_loan_id;\n\n  COMMIT;\nEXCEPTION\n  WHEN NO_DATA_FOUND THEN\n    ROLLBACK;\n...' at line 46"
+      ],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO categories (name) VALUES ('Computer Science'); -- 1",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO categories (name) VALUES ('Mathematics'); -- 2",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO categories (name) VALUES ('Fiction'); -- 3",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO categories (name) VALUES ('History'); -- 4",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO categories (name) VALUES ('Science'); -- 5",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO publishers (name, city) VALUES ('Pearson', 'London'); -- 1",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO publishers (name, city) VALUES ('McGraw-Hill', 'New York')",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO publishers (name, city) VALUES ('Penguin', 'London'); -- 3",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO publishers (name, city) VALUES ('O''Reilly', 'Sebastopol')",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO publishers (name, city) VALUES ('Oxford University Press',",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Abraham Silberschatz', 'U",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Henry F. Korth', 'USA'); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('S. Sudarshan', 'India'); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Ramez Elmasri', 'USA'); -",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Shamkant Navathe', 'USA')",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Thomas H. Cormen', 'USA')",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('George Orwell', 'UK'); --",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Yuval Noah Harari', 'Isra",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Stephen Hawking', 'UK'); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Gilbert Strang', 'USA'); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (1, 1)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (1, 2)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (1, 3)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (2, 4)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (2, 5)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (3, 6)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (4, 7)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (5, 8)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (6, 9)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (7, 10)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO staff (name, role, email) VALUES ('Maya Rai', 'LIBRARIAN',",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO staff (name, role, email) VALUES ('Bikash KC', 'ASSISTANT'",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO staff (name, role, email) VALUES ('Admin User', 'ADMIN', '",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "UPDATE loans SET return_date = DATE '2026-09-20' WHERE loan_id = 1; --",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "UPDATE loans SET return_date = DATE '2026-08-07' WHERE loan_id = 5; --",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "UPDATE loans SET return_date = DATE '2026-09-26' WHERE loan_id = 6; --",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "UPDATE fines SET paid = 'Y', paid_date = DATE '2026-09-21' WHERE loan_",
+      "ok": false,
+      "error": "1146: Table 'lms.fines' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "COMMIT",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1146: Table 'lms.fines' doesn't exist"
+      ],
+      "output": []
+    },
+    {
+      "file": "05_views.sql",
+      "object": "VIEW v_book_catalog",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '(ORDER BY a.name) AS authors,\n       c.name  AS category,\n       p.name  AS p...' at line 5",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "05_views.sql",
+      "object": "VIEW v_active_loans",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "05_views.sql",
+      "object": "VIEW v_overdue_loans",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "05_views.sql",
+      "object": "VIEW v_member_summary",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT title, pub_year, available_copies FROM books WHERE category_id ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Learning SQL 2020 1",
+        "Database System Concepts 2019 5",
+        "Fundamentals of Database Systems 2015 4",
+        "Introduction to Algorithms 2009 3"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT b.title, a.name AS author FROM books b JOIN book_authors ba ON ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "1984 George Orwell",
+        "A Brief History of Time Stephen Hawking",
+        "Database System Concepts Abraham Silberschatz",
+        "Database System Concepts Henry F. Korth",
+        "Database System Concepts S. Sudarshan",
+        "Fundamentals of Database Systems Ramez Elmasri",
+        "Fundamentals of Database Systems Shamkant Navathe",
+        "Introduction to Algorithms Thomas H. Cormen",
+        "Introduction to Linear Algebra Gilbert Strang",
+        "Sapiens Yuval Noah Harari"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT b.title FROM books b LEFT JOIN loans l ON l.book_id = b.book_id",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT c.name AS category, COUNT(*) AS titles, SUM(b.total_copies) AS ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Computer Science 4 13"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT b.title, COUNT(l.loan_id) AS times_borrowed FROM books b JOIN l",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT first_name, last_name FROM members WHERE member_id IN (SELECT l",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT m.first_name, m.last_name, m.email FROM members m WHERE EXISTS ",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT first_name, last_name FROM members m WHERE NOT EXISTS (SELECT 1",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT category, title, borrows, RANK() OVER (PARTITION BY category OR",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT first_name || ' ' || last_name AS name, email, 'MEMBER' AS kind",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Aarav Sharma aarav.sharma@example.com MEMBER",
+        "Emma Lee emma.lee@example.com MEMBER",
+        "John Doe john.doe@example.com MEMBER",
+        "Priya Thapa priya.thapa@example.com MEMBER",
+        "Ravi Kumar ravi.kumar@example.com MEMBER",
+        "Sita Gurung sita.gurung@example.com MEMBER",
+        "Admin User admin@library.org STAFF",
+        "Bikash KC bikash.kc@library.org STAFF",
+        "Maya Rai maya.rai@library.org STAFF"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT loan_id, book_id, member_id, due_date, return_date, CASE WHEN r",
+      "ok": false,
+      "error": "1146: Table 'lms.loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT paid, COUNT(*) AS fines, SUM(amount) AS total FROM fines GROUP ",
+      "ok": false,
+      "error": "1146: Table 'lms.fines' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT * FROM v_book_catalog ORDER BY title",
+      "ok": false,
+      "error": "1146: Table 'lms.v_book_catalog' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT * FROM v_active_loans ORDER BY due_date",
+      "ok": false,
+      "error": "1146: Table 'lms.v_active_loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT * FROM v_overdue_loans ORDER BY days_overdue DESC",
+      "ok": false,
+      "error": "1146: Table 'lms.v_overdue_loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT * FROM v_member_summary ORDER BY member_id",
+      "ok": false,
+      "error": "1146: Table 'lms.v_member_summary' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT * FROM book_audit ORDER BY audit_id",
+      "ok": false,
+      "error": "1146: Table 'lms.book_audit' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "DECLARE v_loan_id NUMBER; BEGIN issue_book(p_book_id => 4, p_member_id",
+      "ok": false,
+      "error": "1327: Undeclared variable: p_book_id",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "BEGIN DECLARE v_loan_id NUMBER; BEGIN issue_book(4, 6, 1, v_loan_id); ",
+      "ok": false,
+      "error": "1305: PROCEDURE DBMS_OUTPUT.PUT_LINE does not exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "BEGIN DECLARE v_loan_id NUMBER; BEGIN issue_book(8, 1, 1, v_loan_id); ",
+      "ok": false,
+      "error": "1305: PROCEDURE DBMS_OUTPUT.PUT_LINE does not exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "BEGIN return_book(3); DBMS_OUTPUT.PUT_LINE('Priya now owes: ' || fn_me",
+      "ok": false,
+      "error": "1305: FUNCTION lms.TRUNC does not exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "BEGIN DECLARE v_loan_id NUMBER; BEGIN issue_book(5, 2, 1, v_loan_id); ",
+      "ok": false,
+      "error": "1305: PROCEDURE DBMS_OUTPUT.PUT_LINE does not exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "DECLARE v_fine_id fines.fine_id%TYPE; BEGIN SELECT fine_id INTO v_fine",
+      "ok": false,
+      "error": "1146: Table 'lms.fines' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "DECLARE CURSOR c_overdue IS SELECT member_name, email, title, days_ove",
+      "ok": false,
+      "error": "1146: Table 'lms.v_overdue_loans' doesn't exist",
+      "warnings": [],
+      "output": []
+    }
+  ]
+}

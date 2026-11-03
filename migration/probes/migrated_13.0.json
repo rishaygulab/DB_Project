@@ -1,0 +1,1277 @@
+{
+  "sql_mode": "ORACLE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,EMPTY_STRING_IS_NULL",
+  "autocommit": 0,
+  "results": [
+    {
+      "file": "00_compat.sql",
+      "object": "PROCEDURE raise_application_error",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "00_compat.sql",
+      "object": "FUNCTION trunc",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1585: This function 'trunc' has the same name as a native function"
+      ],
+      "output": []
+    },
+    {
+      "file": "00_compat.sql",
+      "object": "PACKAGE dbms_output",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1585: This function 'trunc' has the same name as a native function"
+      ],
+      "output": []
+    },
+    {
+      "file": "00_compat.sql",
+      "object": "PACKAGE BODY dbms_output",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1585: This function 'trunc' has the same name as a native function"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "SET FOREIGN_KEY_CHECKS = 0",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1585: This function 'trunc' has the same name as a native function"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "DROP TABLE IF EXISTS book_audit, fines, loans, book_authors, books, ca",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1051: Unknown table 'lms.book_audit,lms.fines,lms.loans,lms.book_authors,lms.books,lms.categories,lms.publishers,lms.a...'"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "DROP SEQUENCE IF EXISTS seq_member, seq_author, seq_publisher, seq_cat",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "4091: Unknown SEQUENCE: 'lms.seq_member,lms.seq_author,lms.seq_publisher,lms.seq_category,lms.seq_book,lms.seq_staff,lms.seq_loan,lms.seq_fine,lms.seq_audit'"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "DROP VIEW IF EXISTS v_book_catalog, v_active_loans, v_overdue_loans, v",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "4092: Unknown VIEW: 'lms.v_book_catalog,lms.v_active_loans,lms.v_overdue_loans,lms.v_member_summary'"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "DROP PROCEDURE IF EXISTS issue_book",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1305: PROCEDURE lms.issue_book does not exist"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "DROP PROCEDURE IF EXISTS return_book",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1305: PROCEDURE lms.return_book does not exist"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "DROP PROCEDURE IF EXISTS pay_fine",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1305: PROCEDURE lms.pay_fine does not exist"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "DROP FUNCTION IF EXISTS fn_calc_fine",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1305: FUNCTION lms.fn_calc_fine does not exist"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "DROP FUNCTION IF EXISTS fn_member_dues",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1305: FUNCTION lms.fn_member_dues does not exist"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "DROP FUNCTION IF EXISTS fn_loan_days",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1305: FUNCTION lms.fn_loan_days does not exist"
+      ],
+      "output": []
+    },
+    {
+      "file": "01_drop.sql",
+      "object": "SET FOREIGN_KEY_CHECKS = 1",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1305: FUNCTION lms.fn_loan_days does not exist"
+      ],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_member",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_author",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_publisher",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_category",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_book",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_staff",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_loan",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_fine",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "SEQUENCE seq_audit",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE members",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE authors",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE publishers",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE categories",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE books",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE book_authors",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1280: Name 'pk_book_authors' ignored for PRIMARY key."
+      ],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE staff",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE loans",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE fines",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "TABLE book_audit",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_books_category",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_books_publisher",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "ALTER TABLE books ADD title_upper VARCHAR2(200) AS (UPPER(title)) VIRT",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_books_title",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_ba_author",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_loans_member",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_loans_book",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "02_schema.sql",
+      "object": "INDEX ix_loans_open",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "FUNCTION fn_calc_fine",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "FUNCTION fn_loan_days",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "FUNCTION fn_member_dues",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "TRIGGER trg_loans_ai",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "TRIGGER trg_loans_au_return",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "TRIGGER trg_books_audit_ai",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "TRIGGER trg_books_audit_au",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "TRIGGER trg_books_audit_ad",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "PROCEDURE issue_book",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "PROCEDURE return_book",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "03_plsql.sql",
+      "object": "PROCEDURE pay_fine",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO categories (name) VALUES ('Computer Science'); -- 1",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO categories (name) VALUES ('Mathematics'); -- 2",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO categories (name) VALUES ('Fiction'); -- 3",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO categories (name) VALUES ('History'); -- 4",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO categories (name) VALUES ('Science'); -- 5",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO publishers (name, city) VALUES ('Pearson', 'London'); -- 1",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO publishers (name, city) VALUES ('McGraw-Hill', 'New York')",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO publishers (name, city) VALUES ('Penguin', 'London'); -- 3",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO publishers (name, city) VALUES ('O''Reilly', 'Sebastopol')",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO publishers (name, city) VALUES ('Oxford University Press',",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Abraham Silberschatz', 'U",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Henry F. Korth', 'USA'); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('S. Sudarshan', 'India'); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Ramez Elmasri', 'USA'); -",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Shamkant Navathe', 'USA')",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Thomas H. Cormen', 'USA')",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('George Orwell', 'UK'); --",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Yuval Noah Harari', 'Isra",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Stephen Hawking', 'UK'); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO authors (name, country) VALUES ('Gilbert Strang', 'USA'); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO books (isbn, title, publisher_id, category_id, pub_year, t",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (1, 1)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (1, 2)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (1, 3)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (2, 4)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (2, 5)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (3, 6)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (4, 7)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (5, 8)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (6, 9)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO book_authors VALUES (7, 10)",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO members (first_name, last_name, email, phone, member_type,",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO staff (name, role, email) VALUES ('Maya Rai', 'LIBRARIAN',",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO staff (name, role, email) VALUES ('Bikash KC', 'ASSISTANT'",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO staff (name, role, email) VALUES ('Admin User', 'ADMIN', '",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "INSERT INTO loans (book_id, member_id, staff_id, loan_date, due_date) ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "UPDATE loans SET return_date = DATE '2026-09-20' WHERE loan_id = 1; --",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "UPDATE loans SET return_date = DATE '2026-08-07' WHERE loan_id = 5; --",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "UPDATE loans SET return_date = DATE '2026-09-26' WHERE loan_id = 6; --",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "UPDATE fines SET paid = 'Y', paid_date = DATE '2026-09-21' WHERE loan_",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "04_data.sql",
+      "object": "COMMIT",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "05_views.sql",
+      "object": "VIEW v_book_catalog",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "05_views.sql",
+      "object": "VIEW v_active_loans",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "05_views.sql",
+      "object": "VIEW v_overdue_loans",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "05_views.sql",
+      "object": "VIEW v_member_summary",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT title, pub_year, available_copies FROM books WHERE category_id ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Learning SQL 2020 0",
+        "Database System Concepts 2019 4",
+        "Fundamentals of Database Systems 2015 3",
+        "Introduction to Algorithms 2009 2"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT b.title, a.name AS author FROM books b JOIN book_authors ba ON ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "1984 George Orwell",
+        "A Brief History of Time Stephen Hawking",
+        "Database System Concepts Abraham Silberschatz",
+        "Database System Concepts Henry F. Korth",
+        "Database System Concepts S. Sudarshan",
+        "Fundamentals of Database Systems Ramez Elmasri",
+        "Fundamentals of Database Systems Shamkant Navathe",
+        "Introduction to Algorithms Thomas H. Cormen",
+        "Introduction to Linear Algebra Gilbert Strang",
+        "Sapiens Yuval Noah Harari"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT b.title FROM books b LEFT JOIN loans l ON l.book_id = b.book_id",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Introduction to Linear Algebra"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT c.name AS category, COUNT(*) AS titles, SUM(b.total_copies) AS ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Computer Science 4 13"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT b.title, COUNT(l.loan_id) AS times_borrowed FROM books b JOIN l",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Database System Concepts 2",
+        "Learning SQL 1",
+        "Fundamentals of Database Systems 1"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT first_name, last_name FROM members WHERE member_id IN (SELECT l",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Aarav Sharma",
+        "Priya Thapa",
+        "Ravi Kumar",
+        "Sita Gurung"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT m.first_name, m.last_name, m.email FROM members m WHERE EXISTS ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Priya Thapa priya.thapa@example.com",
+        "Sita Gurung sita.gurung@example.com"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT first_name, last_name FROM members m WHERE NOT EXISTS (SELECT 1",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "John Doe"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT category, title, borrows, RANK() OVER (PARTITION BY category OR",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Computer Science Database System Concepts 2 1",
+        "Computer Science Fundamentals of Database Systems 1 2",
+        "Computer Science Introduction to Algorithms 1 2",
+        "Computer Science Learning SQL 1 2",
+        "Fiction 1984 1 1",
+        "History Sapiens 1 1",
+        "Mathematics Introduction to Linear Algebra 0 1",
+        "Science A Brief History of Time 1 1"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT first_name || ' ' || last_name AS name, email, 'MEMBER' AS kind",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Aarav Sharma aarav.sharma@example.com MEMBER",
+        "Emma Lee emma.lee@example.com MEMBER",
+        "John Doe john.doe@example.com MEMBER",
+        "Priya Thapa priya.thapa@example.com MEMBER",
+        "Ravi Kumar ravi.kumar@example.com MEMBER",
+        "Sita Gurung sita.gurung@example.com MEMBER",
+        "Admin User admin@library.org STAFF",
+        "Bikash KC bikash.kc@library.org STAFF",
+        "Maya Rai maya.rai@library.org STAFF"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT loan_id, book_id, member_id, due_date, return_date, CASE WHEN r",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "1.0 1.0 1.0 2026-09-15 00:00:00 2026-09-20 00:00:00 RETURNED LATE",
+        "2.0 4.0 1.0 2026-11-03 00:00:00 NULL ON LOAN",
+        "3.0 3.0 2.0 2026-10-04 00:00:00 NULL OVERDUE",
+        "4.0 1.0 3.0 2026-10-31 00:00:00 NULL ON LOAN",
+        "5.0 5.0 4.0 2026-08-08 00:00:00 2026-08-07 00:00:00 RETURNED",
+        "6.0 6.0 5.0 2026-09-24 00:00:00 2026-09-26 00:00:00 RETURNED LATE",
+        "7.0 8.0 3.0 2026-11-09 00:00:00 NULL ON LOAN",
+        "8.0 2.0 5.0 2026-10-19 00:00:00 NULL OVERDUE"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT paid, COUNT(*) AS fines, SUM(amount) AS total FROM fines GROUP ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "N 1 10.00",
+        "Y 1 25.00"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT * FROM v_book_catalog ORDER BY title",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "4.0 978-0451524935 1984 George Orwell Fiction Penguin 1949 6 5",
+        "6.0 978-0553380163 A Brief History of Time Stephen Hawking Science Penguin 1998 2 2",
+        "1.0 978-0078022159 Database System Concepts Abraham Silberschatz, Henry F. Korth, S. Sudarshan Computer Science McGraw-Hill 2019 5 4",
+        "2.0 978-0133970777 Fundamentals of Database Systems Ramez Elmasri, Shamkant Navathe Computer Science Pearson 2015 4 3",
+        "3.0 978-0262033848 Introduction to Algorithms Thomas H. Cormen Computer Science McGraw-Hill 2009 3 2",
+        "7.0 978-0980232776 Introduction to Linear Algebra Gilbert Strang Mathematics Oxford University Press 2016 2 2",
+        "8.0 978-1492043454 Learning SQL NULL Computer Science O'Reilly 2020 1 0",
+        "5.0 978-0062316097 Sapiens Yuval Noah Harari History Penguin 2015 3 3"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT * FROM v_active_loans ORDER BY due_date",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "3.0 2.0 Priya Thapa Introduction to Algorithms 2026-09-20 00:00:00 2026-10-04 00:00:00 Maya Rai",
+        "8.0 5.0 Sita Gurung Fundamentals of Database Systems 2026-10-05 00:00:00 2026-10-19 00:00:00 Maya Rai",
+        "4.0 3.0 Ravi Kumar Database System Concepts 2026-10-01 00:00:00 2026-10-31 00:00:00 Maya Rai",
+        "2.0 1.0 Aarav Sharma 1984 2026-10-20 00:00:00 2026-11-03 00:00:00 Bikash KC",
+        "7.0 3.0 Ravi Kumar Learning SQL 2026-10-10 00:00:00 2026-11-09 00:00:00 Maya Rai"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT * FROM v_overdue_loans ORDER BY days_overdue DESC",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "3.0 Priya Thapa priya.thapa@example.com Introduction to Algorithms 2026-10-04 00:00:00 25 125.0",
+        "8.0 Sita Gurung sita.gurung@example.com Fundamentals of Database Systems 2026-10-19 00:00:00 10 50.0"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT * FROM v_member_summary ORDER BY member_id",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "1.0 Aarav Sharma STUDENT ACTIVE 2 1 0.0",
+        "2.0 Priya Thapa STUDENT ACTIVE 1 1 0.0",
+        "3.0 Ravi Kumar FACULTY ACTIVE 2 2 0.0",
+        "4.0 Emma Lee PUBLIC ACTIVE 1 0 0.0",
+        "5.0 Sita Gurung STUDENT ACTIVE 2 1 10.0",
+        "6.0 John Doe PUBLIC SUSPENDED 0 1 0.0"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "SELECT * FROM book_audit ORDER BY audit_id",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "1.0 1.0 INSERT NULL Database System Concepts root 2026-10-29 11:46:52.377772",
+        "2.0 2.0 INSERT NULL Fundamentals of Database Systems root 2026-10-29 11:46:52.379439",
+        "3.0 3.0 INSERT NULL Introduction to Algorithms root 2026-10-29 11:46:52.379867",
+        "4.0 4.0 INSERT NULL 1984 root 2026-10-29 11:46:52.380848",
+        "5.0 5.0 INSERT NULL Sapiens root 2026-10-29 11:46:52.381183",
+        "6.0 6.0 INSERT NULL A Brief History of Time root 2026-10-29 11:46:52.381536",
+        "7.0 7.0 INSERT NULL Introduction to Linear Algebra root 2026-10-29 11:46:52.381828",
+        "8.0 8.0 INSERT NULL Learning SQL root 2026-10-29 11:46:52.382119"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "DECLARE v_loan_id NUMBER; BEGIN issue_book(4, 2, 1, v_loan_id); DBMS_O",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Issued, loan id = 9"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "BEGIN DECLARE v_loan_id NUMBER; BEGIN issue_book(4, 6, 1, v_loan_id); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Expected error: ORA-20001: Member is suspended."
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "BEGIN DECLARE v_loan_id NUMBER; BEGIN issue_book(8, 1, 1, v_loan_id); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Expected error: ORA-20002: No copies available."
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "BEGIN return_book(3); DBMS_OUTPUT.PUT_LINE('Priya now owes: ' || fn_me",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Priya now owes: 125"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "BEGIN DECLARE v_loan_id NUMBER; BEGIN issue_book(5, 2, 1, v_loan_id); ",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Expected error: ORA-20003: Member has unpaid fines."
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "DECLARE v_fine_id fines.fine_id%TYPE; BEGIN SELECT fine_id INTO v_fine",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "Paid. Priya now owes: 0"
+      ]
+    },
+    {
+      "file": "06_queries.sql",
+      "object": "DECLARE CURSOR c_overdue IS SELECT member_name, email, title, days_ove",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": [
+        "To: sita.gurung@example.com | Dear Sita Gurung, \"Fundamentals of Database Systems\" is 10 day(s) overdue. Fine so far: 50"
+      ]
+    }
+  ]
+}
