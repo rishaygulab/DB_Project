@@ -1,0 +1,349 @@
+{
+  "sql_mode": "ORACLE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,EMPTY_STRING_IS_NULL",
+  "collation": "utf8mb4_nopad_bin",
+  "autocommit": 0,
+  "results": [
+    {
+      "object": "REGIONS",
+      "case": "5 rows loaded (hr_install verification)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "COUNTRIES",
+      "case": "25 rows loaded (hr_install verification)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "DEPARTMENTS",
+      "case": "27 rows loaded (hr_install verification)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "LOCATIONS",
+      "case": "23 rows loaded (hr_install verification)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "107 rows loaded (hr_install verification)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "JOBS",
+      "case": "19 rows loaded (hr_install verification)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "JOB_HISTORY",
+      "case": "10 rows loaded (hr_install verification)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "hire dates from DATE literals = Oracle TO_DATE values (min, max, distinct)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "hire_date of 100 and 206",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "JOB_HISTORY",
+      "case": "start dates from DATE literals",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "valid insert",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "last_name NULL -> ORA-01400 (emp_last_name_nn)",
+      "ok": true,
+      "detail": "error 1048: Column 'last_name' cannot be null"
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "last_name '' is NULL -> ORA-01400",
+      "ok": true,
+      "detail": "error 1048: Column 'last_name' cannot be null"
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "salary 0 -> ORA-02290 (emp_salary_min)",
+      "ok": true,
+      "detail": "error 4025: CONSTRAINT `emp_salary_min` failed for `hr_verify`.`employees`"
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "salary 0.01 boundary accepted",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "commission_pct 0.994 rounds to 0.99 (NUMBER(2,2))",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "commission_pct 1 -> ORA-01438 (not silently 0.99)",
+      "ok": true,
+      "detail": "error 1264: Out of range value for column 'commission_pct' at row 1"
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "duplicate email -> ORA-00001 (emp_email_uk)",
+      "ok": true,
+      "detail": "error 1062: Duplicate entry 'SKING' for key 'emp_email_uk'"
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "email differing only in case is a different value",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "unknown department -> ORA-02291 (emp_dept_fk)",
+      "ok": true,
+      "detail": "error 1452: Cannot add or update a child row: a foreign key constraint fails (\"hr_verify\".\"employees\", CONSTRAINT \"emp_dept_fk\" FOREIGN KEY (\"department_id\") REFERENCES \"departments\" (\"department_id\"))"
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "unknown manager -> ORA-02291 (emp_manager_fk, self reference)",
+      "ok": true,
+      "detail": "error 1452: Cannot add or update a child row: a foreign key constraint fails (\"hr_verify\".\"employees\", CONSTRAINT \"emp_manager_fk\" FOREIGN KEY (\"manager_id\") REFERENCES \"employees\" (\"employee_id\"))"
+    },
+    {
+      "object": "EMPLOYEES",
+      "case": "delete a manager -> ORA-02292 (child rows exist)",
+      "ok": true,
+      "detail": "error 1451: Cannot delete or update a parent row: a foreign key constraint fails (\"hr_verify\".\"departments\", CONSTRAINT \"dept_mgr_fk\" FOREIGN KEY (\"manager_id\") REFERENCES \"employees\" (\"employee_id\"))"
+    },
+    {
+      "object": "DEPARTMENTS",
+      "case": "dept_mgr_fk is enforced again after the load",
+      "ok": true,
+      "detail": "error 1452: Cannot add or update a child row: a foreign key constraint fails (\"hr_verify\".\"departments\", CONSTRAINT \"dept_mgr_fk\" FOREIGN KEY (\"manager_id\") REFERENCES \"employees\" (\"employee_id\"))"
+    },
+    {
+      "object": "COUNTRIES",
+      "case": "country_id is case-sensitive ('it' next to 'IT')",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "COUNTRIES",
+      "case": "duplicate country_id -> ORA-00001",
+      "ok": true,
+      "detail": "error 1062: Duplicate entry 'IT' for key 'PRIMARY'"
+    },
+    {
+      "object": "COUNTRIES",
+      "case": "unknown region -> ORA-02291 (countr_reg_fk)",
+      "ok": true,
+      "detail": "error 1452: Cannot add or update a child row: a foreign key constraint fails (\"hr_verify\".\"countries\", CONSTRAINT \"countr_reg_fk\" FOREIGN KEY (\"region_id\") REFERENCES \"regions\" (\"region_id\"))"
+    },
+    {
+      "object": "LOCATIONS",
+      "case": "city NULL -> ORA-01400 (loc_city_nn)",
+      "ok": true,
+      "detail": "error 1048: Column 'city' cannot be null"
+    },
+    {
+      "object": "JOBS",
+      "case": "job_title '' is NULL -> ORA-01400",
+      "ok": true,
+      "detail": "error 1048: Column 'job_title' cannot be null"
+    },
+    {
+      "object": "JOB_HISTORY",
+      "case": "end_date = start_date -> ORA-02290 (jhist_date_interval)",
+      "ok": true,
+      "detail": "error 4025: CONSTRAINT `jhist_date_interval` failed for `hr_verify`.`job_history`"
+    },
+    {
+      "object": "LOCATIONS_SEQ",
+      "case": "first value 3300",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "DEPARTMENTS_SEQ",
+      "case": "first value 280, then 290",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMPLOYEES_SEQ",
+      "case": "first value 207",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "LOCATIONS_SEQ",
+      "case": "MAXVALUE 9900 is the last value",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "LOCATIONS_SEQ",
+      "case": "NOCYCLE: past MAXVALUE -> ORA-08004",
+      "ok": true,
+      "detail": "error 4084: Sequence 'hr_verify.locations_seq' has run out"
+    },
+    {
+      "object": "EMP_DETAILS_VIEW",
+      "case": "106 rows (178 has no department, inner join)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMP_DETAILS_VIEW",
+      "case": "joined columns for 100",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "EMP_DETAILS_VIEW",
+      "case": "UPDATE through view -> ORA-42399 (read only)",
+      "ok": true,
+      "detail": "error 1288: The target table emp_details_view of the UPDATE is not updatable"
+    },
+    {
+      "object": "EMP_DETAILS_VIEW",
+      "case": "DELETE through view -> ORA-42399 (read only)",
+      "ok": true,
+      "detail": "error 1288: The target table emp_details_view of the DELETE is not updatable"
+    },
+    {
+      "object": "ADD_JOB_HISTORY",
+      "case": "inserts one row",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "ADD_JOB_HISTORY",
+      "case": "NULL department allowed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "ADD_JOB_HISTORY",
+      "case": "NULL end_date -> ORA-01400",
+      "ok": true,
+      "detail": "error 1048: Column 'end_date' cannot be null"
+    },
+    {
+      "object": "ADD_JOB_HISTORY",
+      "case": "'' job_id is NULL -> ORA-01400",
+      "ok": true,
+      "detail": "error 1048: Column 'job_id' cannot be null"
+    },
+    {
+      "object": "ADD_JOB_HISTORY",
+      "case": "end before start -> ORA-02290",
+      "ok": true,
+      "detail": "error 4025: CONSTRAINT `jhist_date_interval` failed for `hr_verify`.`job_history`"
+    },
+    {
+      "object": "ADD_JOB_HISTORY",
+      "case": "unknown job -> ORA-02291 (jhist_job_fk)",
+      "ok": true,
+      "detail": "error 1452: Cannot add or update a child row: a foreign key constraint fails (\"hr_verify\".\"job_history\", CONSTRAINT \"jhist_job_fk\" FOREIGN KEY (\"job_id\") REFERENCES \"jobs\" (\"job_id\"))"
+    },
+    {
+      "object": "ADD_JOB_HISTORY",
+      "case": "duplicate (employee, start_date) -> ORA-00001",
+      "ok": true,
+      "detail": "error 1062: Duplicate entry '102-2011-01-13 00:00:00' for key 'PRIMARY'"
+    },
+    {
+      "object": "UPDATE_JOB_HISTORY",
+      "case": "job change records the old job",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "UPDATE_JOB_HISTORY",
+      "case": "department change records the old department",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "UPDATE_JOB_HISTORY",
+      "case": "fires when job_id is SET to its own value",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "UPDATE_JOB_HISTORY",
+      "case": "does not fire on other columns",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "UPDATE_JOB_HISTORY",
+      "case": "hire_date already in history -> ORA-00001, UPDATE rejected",
+      "ok": true,
+      "detail": "error 1062: Duplicate entry '102-2011-01-13 00:00:00' for key 'PRIMARY'"
+    },
+    {
+      "object": "UPDATE_JOB_HISTORY",
+      "case": "second change on the same day -> ORA-00001",
+      "ok": true,
+      "detail": "error 1062: Duplicate entry '100-2013-06-17 00:00:00' for key 'PRIMARY'"
+    },
+    {
+      "object": "SECURE_EMPLOYEES",
+      "case": "installed disabled: DML on employees works at any hour",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "SECURE_DML",
+      "case": "weekend test is true on a Saturday",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "SECURE_DML",
+      "case": "weekend test is false on a Wednesday",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "SECURE_DML",
+      "case": "office hours: 18:00 inside, 18:01 outside",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "SECURE_DML",
+      "case": "office hours: 07:59 outside, 08:00 inside",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "object": "SECURE_DML",
+      "case": "-20205 text when the shim raises it",
+      "ok": true,
+      "detail": "error 20205: ORA-20205: You may only make changes during normal office hours"
+    }
+  ]
+}
