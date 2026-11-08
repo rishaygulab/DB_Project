@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Object-level verification of the migrated corpus.
 
-For every case in migration/verify/cases.json: recreate the database, load
-corpus/mariadb/lms 00..05 in one session, run the case's steps, and compare with
+For every case in a cases file: recreate the database, load the corpus files
+it names (default: corpus/mariadb/lms 00..05) in one session, run the case's steps, and compare with
 the Oracle-semantics expectation. Prints one line per case and a per-object
 summary; --json writes the full results (consumed by the compatibility matrix).
 
@@ -25,7 +25,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 from run_objects import RECOMMENDED_COLLATION, RECOMMENDED_MODE, connect, split_statements  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-LOAD = ["00_compat.sql", "01_drop.sql", "02_schema.sql", "03_plsql.sql", "04_data.sql", "05_views.sql"]
+# Defaults for a cases file without "corpus" / "load" keys (cases.json = LMS).
+DEFAULT_CORPUS = "lms"
+DEFAULT_LOAD = ["00_compat.sql", "01_drop.sql", "02_schema.sql", "03_plsql.sql", "04_data.sql", "05_views.sql"]
 
 
 def norm(v):
@@ -55,7 +57,7 @@ def resolve(text, today):
     return re.sub(r"\{([A-Z_+0-9:-]+)\}", sub, text)
 
 
-def load(sql_mode, collation, autocommit, db):
+def load(sql_mode, collation, autocommit, db, corpus, files):
     admin = connect(sql_mode, 1)
     with admin.cursor() as c:
         c.execute(f"DROP DATABASE IF EXISTS {db}")
@@ -63,8 +65,8 @@ def load(sql_mode, collation, autocommit, db):
     admin.close()
     conn = connect(sql_mode, autocommit, db)
     with conn.cursor() as c:
-        for f in LOAD:
-            for stmt in split_statements(open(os.path.join(ROOT, "corpus", "mariadb", "lms", f)).read()):
+        for f in files:
+            for stmt in split_statements(open(os.path.join(ROOT, "corpus", "mariadb", corpus, f)).read()):
                 c.execute(stmt)
                 while c.nextset():
                     pass
@@ -116,12 +118,14 @@ def main():
     ap.add_argument("--cases", default=os.path.join(ROOT, "migration", "verify", "cases.json"))
     ap.add_argument("--json")
     a = ap.parse_args()
-    db = os.environ.get("MDB_DATABASE", "lms_verify")
-    cases = json.load(open(a.cases))["cases"]
+    spec = json.load(open(a.cases))
+    corpus, files = spec.get("corpus", DEFAULT_CORPUS), spec.get("load", DEFAULT_LOAD)
+    db = os.environ.get("MDB_DATABASE", f"{corpus}_verify")
+    cases = spec["cases"]
 
     results, per_obj = [], OrderedDict()
     for case in cases:
-        conn = load(a.sql_mode, a.collation, a.autocommit, db)
+        conn = load(a.sql_mode, a.collation, a.autocommit, db, corpus, files)
         with conn.cursor() as c:
             c.execute("SELECT CURRENT_DATE")
             today = c.fetchone()[0]

@@ -33,9 +33,16 @@ PLSQL_START = re.compile(
     re.I,
 )
 SQLPLUS_CMD = re.compile(
-    r"^\s*(SET\s+(ECHO|SERVEROUTPUT|LINESIZE|PAGESIZE|FEEDBACK|DEFINE)\b|@|WHENEVER\b|PROMPT\b|SPOOL\b)",
+    r"^\s*(SET\s+(ECHO|SERVEROUTPUT|LINESIZE|PAGESIZE|FEEDBACK|DEFINE|NUMWIDTH|TRIMSPOOL|TAB|VERIFY|HEADING)\b"
+    r"|@|WHENEVER\b|PROMPT\b|SPOOL\b|ACCEPT\b|COLUMN\b|EXIT\b)",
     re.I,
 )
+# SQL*Plus REMARK lines (REM / rem / Rem ...) are comments, like '--'.
+COMMENT = re.compile(r"^\s*(--|REM(ARK)?(\s|$))", re.I)
+
+
+def is_comment(line):
+    return bool(COMMENT.match(line))
 NAME = re.compile(
     r"CREATE\s+(?:OR\s+REPLACE\s+)?(?:UNIQUE\s+)?(TABLE|VIEW|SEQUENCE|INDEX|FUNCTION|PROCEDURE|TRIGGER|PACKAGE(?:\s+BODY)?)\s+(\w+)",
     re.I,
@@ -43,14 +50,14 @@ NAME = re.compile(
 
 
 def strip_comment_lines(text):
-    return "\n".join(l for l in text.splitlines() if not l.strip().startswith("--")).strip()
+    return "\n".join(l for l in text.splitlines() if not is_comment(l)).strip()
 
 
 def split_statements(sql):
     stmts, buf, in_plsql = [], [], False
     for line in sql.splitlines():
         if not buf:
-            if not line.strip() or line.strip().startswith("--"):
+            if not line.strip() or is_comment(line):
                 continue
             if SQLPLUS_CMD.match(line):
                 continue
