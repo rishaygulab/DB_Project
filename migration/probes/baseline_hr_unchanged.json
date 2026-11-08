@@ -1,0 +1,773 @@
+{
+  "sql_mode": "ORACLE",
+  "autocommit": 1,
+  "results": [
+    {
+      "file": "hr_create.sql",
+      "object": "TABLE regions",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'NOT NULL \n    , region_name    VARCHAR2(25) \n    )' at line 3",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX reg_id_pk",
+      "ok": false,
+      "error": "1146: Table 'hr.regions' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "ALTER TABLE regions ADD ( CONSTRAINT reg_id_pk PRIMARY KEY (region_id)",
+      "ok": false,
+      "error": "1146: Table 'hr.regions' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "TABLE countries",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'NOT NULL \n    , country_name    VARCHAR2(60) \n    , region_id       NUMBER \n ...' at line 3",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "ALTER TABLE countries ADD ( CONSTRAINT countr_reg_fk FOREIGN KEY (regi",
+      "ok": false,
+      "error": "1146: Table 'hr.countries' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "TABLE locations",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'NOT NULL\n    , state_province VARCHAR2(25)\n    , country_id     CHAR(2)\n    )' at line 6",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX loc_id_pk",
+      "ok": false,
+      "error": "1146: Table 'hr.locations' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "ALTER TABLE locations ADD ( CONSTRAINT loc_id_pk PRIMARY KEY (location",
+      "ok": false,
+      "error": "1146: Table 'hr.locations' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "SEQUENCE locations_seq",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "TABLE departments",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'NOT NULL\n    , manager_id       NUMBER(6)\n    , location_id      NUMBER(4)\n    )' at line 4",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX dept_id_pk",
+      "ok": false,
+      "error": "1146: Table 'hr.departments' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "ALTER TABLE departments ADD ( CONSTRAINT dept_id_pk PRIMARY KEY (depar",
+      "ok": false,
+      "error": "1146: Table 'hr.departments' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "SEQUENCE departments_seq",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "TABLE jobs",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'NOT NULL\n    , min_salary     NUMBER(6)\n    , max_salary     NUMBER(6)\n    )' at line 4",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX job_id_pk",
+      "ok": false,
+      "error": "1146: Table 'hr.jobs' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "ALTER TABLE jobs ADD ( CONSTRAINT job_id_pk PRIMARY KEY(job_id) )",
+      "ok": false,
+      "error": "1146: Table 'hr.jobs' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "TABLE employees",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'NOT NULL\n    , email          VARCHAR2(25)\n\tCONSTRAINT     emp_email_nn  NOT ...' at line 5",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX emp_emp_id_pk",
+      "ok": false,
+      "error": "1146: Table 'hr.employees' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "ALTER TABLE employees ADD ( CONSTRAINT emp_emp_id_pk PRIMARY KEY (empl",
+      "ok": false,
+      "error": "1146: Table 'hr.employees' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "ALTER TABLE departments ADD ( CONSTRAINT dept_mgr_fk FOREIGN KEY (mana",
+      "ok": false,
+      "error": "1146: Table 'hr.departments' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "SEQUENCE employees_seq",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "TABLE job_history",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'NOT NULL\n    , start_date    DATE\n\tCONSTRAINT    jhist_start_date_nn  NOT NUL...' at line 3",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX jhist_emp_id_st_date_pk",
+      "ok": false,
+      "error": "1146: Table 'hr.job_history' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "ALTER TABLE job_history ADD ( CONSTRAINT jhist_emp_id_st_date_pk PRIMA",
+      "ok": false,
+      "error": "1146: Table 'hr.job_history' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "VIEW emp_details_view",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'READ ONLY' at line 47",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX emp_department_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.employees' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX emp_job_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.employees' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX emp_manager_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.employees' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX emp_name_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.employees' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX dept_location_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.departments' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX jhist_job_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.job_history' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX jhist_employee_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.job_history' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX jhist_department_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.job_history' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX loc_city_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.locations' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX loc_state_province_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.locations' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "INDEX loc_country_ix",
+      "ok": false,
+      "error": "1146: Table 'hr.locations' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON TABLE regions IS 'Regions table that contains region number",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON TABLE regions \nIS 'Regions table that contains region numbers and names. r...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN regions.region_id IS 'Primary key of regions table.'",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN regions.region_id\nIS 'Primary key of regions table.'' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN regions.region_name IS 'Names of regions. Locations ",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN regions.region_name\nIS 'Names of regions. Locations are in the coun...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON TABLE locations IS 'Locations table that contains specific ",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON TABLE locations\nIS 'Locations table that contains specific address of a sp...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN locations.location_id IS 'Primary key of locations t",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN locations.location_id\nIS 'Primary key of locations table'' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN locations.street_address IS 'Street address of an of",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN locations.street_address\nIS 'Street address of an office, warehouse...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN locations.postal_code IS 'Postal code of the locatio",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN locations.postal_code\nIS 'Postal code of the location of an office,...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN locations.city IS 'A not null column that shows city",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN locations.city\nIS 'A not null column that shows city where an offic...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN locations.state_province IS 'State or Province where",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN locations.state_province\nIS 'State or Province where an office, war...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN locations.country_id IS 'Country where an office, wa",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN locations.country_id\nIS 'Country where an office, warehouse, or pro...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON TABLE departments IS 'Departments table that shows details ",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON TABLE departments\nIS 'Departments table that shows details of departments ...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN departments.department_id IS 'Primary key column of ",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN departments.department_id\nIS 'Primary key column of departments tab...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN departments.department_name IS 'A not null column th",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN departments.department_name\nIS 'A not null column that shows name o...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN departments.manager_id IS 'Manager_id of a departmen",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN departments.manager_id\nIS 'Manager_id of a department. Foreign key ...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN departments.location_id IS 'Location id where a depa",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN departments.location_id\nIS 'Location id where a department is locat...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON TABLE job_history IS 'Table that stores job history of the ",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON TABLE job_history\nIS 'Table that stores job history of the employees. If a...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN job_history.employee_id IS 'A not null column in the",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN job_history.employee_id\n  IS 'A not null column in the complex prim...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN job_history.start_date IS 'A not null column in the ",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN job_history.start_date\n  IS 'A not null column in the complex prima...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN job_history.end_date IS 'Last day of the employee in",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN job_history.end_date\n  IS 'Last day of the employee in this job rol...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN job_history.job_id IS 'Job role in which the employe",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN job_history.job_id\n  IS 'Job role in which the employee worked in t...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN job_history.department_id IS 'Department id in which",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN job_history.department_id\n  IS 'Department id in which the employee...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON TABLE countries IS 'country table. References with location",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON TABLE countries\n  IS 'country table. References with locations table.'' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN countries.country_id IS 'Primary key of countries ta",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN countries.country_id\n  IS 'Primary key of countries table.'' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN countries.country_name IS 'Country name'",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN countries.country_name\n  IS 'Country name'' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN countries.region_id IS 'Region ID for the country. F",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN countries.region_id\n  IS 'Region ID for the country. Foreign key to...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON TABLE jobs IS 'jobs table with job titles and salary ranges",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON TABLE jobs\n  IS 'jobs table with job titles and salary ranges.\nReferences ...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN jobs.job_id IS 'Primary key of jobs table.'",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN jobs.job_id\n  IS 'Primary key of jobs table.'' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN jobs.job_title IS 'A not null column that shows job ",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN jobs.job_title\n  IS 'A not null column that shows job title, e.g. A...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN jobs.min_salary IS 'Minimum salary for a job title.'",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN jobs.min_salary\n  IS 'Minimum salary for a job title.'' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN jobs.max_salary IS 'Maximum salary for a job title'",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN jobs.max_salary\n  IS 'Maximum salary for a job title'' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON TABLE employees IS 'employees table. References with depart",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON TABLE employees\n  IS 'employees table. References with departments,\njobs, ...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.employee_id IS 'Primary key of employees t",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.employee_id\n  IS 'Primary key of employees table.'' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.first_name IS 'First name of the employee.",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.first_name\n  IS 'First name of the employee. A not null c...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.last_name IS 'Last name of the employee. A",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.last_name\n  IS 'Last name of the employee. A not null col...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.email IS 'Email id of the employee'",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.email\n  IS 'Email id of the employee'' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.phone_number IS 'Phone number of the emplo",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.phone_number\n  IS 'Phone number of the employee; includes...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.hire_date IS 'Date when the employee start",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.hire_date\n  IS 'Date when the employee started on this jo...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.job_id IS 'Current job of the employee; fo",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.job_id\n  IS 'Current job of the employee; foreign key to ...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.salary IS 'Monthly salary of the employee.",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.salary\n  IS 'Monthly salary of the employee. Must be grea...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.commission_pct IS 'Commission percentage o",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.commission_pct\n  IS 'Commission percentage of the employe...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.manager_id IS 'Manager id of the employee;",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.manager_id\n  IS 'Manager id of the employee; has same dom...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_create.sql",
+      "object": "COMMENT ON COLUMN employees.department_id IS 'Department id where empl",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN employees.department_id\n  IS 'Department id where employee works; f...' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "ALTER SESSION SET NLS_LANGUAGE=American",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'SESSION SET NLS_LANGUAGE=American' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "BEGIN INSERT INTO regions VALUES ( 10 , 'Europe' ); INSERT INTO region",
+      "ok": false,
+      "error": "1146: Table 'hr.regions' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "BEGIN INSERT INTO countries VALUES ( 'IT' , 'Italy' , 10 ); INSERT INT",
+      "ok": false,
+      "error": "1146: Table 'hr.countries' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "BEGIN INSERT INTO locations VALUES ( 1000 , '1297 Via Cola di Rie' , '",
+      "ok": false,
+      "error": "1146: Table 'hr.locations' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "ALTER TABLE departments DISABLE CONSTRAINT dept_mgr_fk",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'CONSTRAINT dept_mgr_fk' at line 2",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "BEGIN INSERT INTO departments VALUES ( 10 , 'Administration' , 200 , 1",
+      "ok": false,
+      "error": "1146: Table 'hr.departments' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "BEGIN INSERT INTO jobs VALUES ( 'AD_PRES' , 'President' , 20080 , 4000",
+      "ok": false,
+      "error": "1146: Table 'hr.jobs' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "BEGIN INSERT INTO employees VALUES ( 100 , 'Steven' , 'King' , 'SKING'",
+      "ok": false,
+      "error": "1146: Table 'hr.employees' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "BEGIN INSERT INTO job_history VALUES (102 , TO_DATE('13-01-2011', 'dd-",
+      "ok": false,
+      "error": "1146: Table 'hr.job_history' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "COMMIT",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1146: Table 'hr.job_history' doesn't exist",
+        "4094: At line 7 in anonymous block"
+      ],
+      "output": []
+    },
+    {
+      "file": "hr_populate.sql",
+      "object": "ALTER TABLE departments ENABLE CONSTRAINT dept_mgr_fk",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'CONSTRAINT dept_mgr_fk' at line 2",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_code.sql",
+      "object": "PROCEDURE secure_dml",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'CONSTRAINT dept_mgr_fk' at line 2"
+      ],
+      "output": []
+    },
+    {
+      "file": "hr_code.sql",
+      "object": "TRIGGER secure_employees",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'OR UPDATE OR DELETE ON employees\nBEGIN\n  secure_dml;\nEND secure_employees' at line 2",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_code.sql",
+      "object": "ALTER TRIGGER secure_employees DISABLE",
+      "ok": false,
+      "error": "1064: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'TRIGGER secure_employees DISABLE' at line 1",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_code.sql",
+      "object": "PROCEDURE add_job_history",
+      "ok": true,
+      "error": "",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_code.sql",
+      "object": "TRIGGER update_job_history",
+      "ok": false,
+      "error": "1146: Table 'hr.employees' doesn't exist",
+      "warnings": [],
+      "output": []
+    },
+    {
+      "file": "hr_code.sql",
+      "object": "COMMIT",
+      "ok": true,
+      "error": "",
+      "warnings": [
+        "1146: Table 'hr.employees' doesn't exist"
+      ],
+      "output": []
+    }
+  ]
+}

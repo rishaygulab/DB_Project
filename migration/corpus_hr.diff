@@ -1,0 +1,1673 @@
+diff -ru -x .gitkeep -x README.md -x README.txt -x hr_install.sql -x hr_uninstall.sql corpus/oracle/hr/hr_code.sql corpus/mariadb/hr/hr_code.sql
+--- corpus/oracle/hr/hr_code.sql	2026-11-03 13:41:00
++++ corpus/mariadb/hr/hr_code.sql	2026-11-04 16:04:46
+@@ -52,6 +52,10 @@
+ rem --------------------------------------------------------------------------
+ 
+ 
++-- MariaDB 11.8 port (sql_mode=ORACLE): every change is marked '-- MIGRATION:'.
++-- See migration/COMPATIBILITY_MATRIX.md (HR section). Load hr_compat.sql first
++-- (RAISE_APPLICATION_ERROR).
++
+ SET FEEDBACK 1
+ SET NUMWIDTH 10
+ SET LINESIZE 80
+@@ -66,22 +70,37 @@
+ CREATE OR REPLACE PROCEDURE secure_dml
+ IS
+ BEGIN
++  -- MIGRATION: UPPER() around TO_CHAR(.., 'DY') (probe F15). MariaDB returns 'Sat' where
++  --   Oracle returns 'SAT'; under the binary collation the weekend test was silently never true.
+   IF TO_CHAR (SYSDATE, 'HH24:MI') NOT BETWEEN '08:00' AND '18:00'
+-        OR TO_CHAR (SYSDATE, 'DY') IN ('SAT', 'SUN') THEN
++        OR UPPER(TO_CHAR (SYSDATE, 'DY')) IN ('SAT', 'SUN') THEN
+ 	RAISE_APPLICATION_ERROR (-20205, 
+ 		'You may only make changes during normal office hours');
+   END IF;
+ END secure_dml;
+ /
+ 
+-CREATE OR REPLACE TRIGGER secure_employees
+-  BEFORE INSERT OR UPDATE OR DELETE ON employees
+-BEGIN
+-  secure_dml;
+-END secure_employees;
+-/
+-
+-ALTER TRIGGER secure_employees DISABLE;
++-- MIGRATION: secure_employees is not created. Oracle installs it DISABLED, MariaDB has no
++--   disabled state (ALTER TRIGGER ... DISABLE is a syntax error, probe R8), so "no trigger"
++--   is the behaviour that matches. It is also a multi-event (R4) statement-level (X22)
++--   trigger; neither exists here. To ENABLE it, run the three row-level triggers below.
++--   Difference: they fire once per row, so a DML touching 0 rows is not checked.
++--
++-- CREATE OR REPLACE TRIGGER secure_employees_ins BEFORE INSERT ON employees FOR EACH ROW
++-- BEGIN secure_dml; END;
++-- CREATE OR REPLACE TRIGGER secure_employees_upd BEFORE UPDATE ON employees FOR EACH ROW
++-- BEGIN secure_dml; END;
++-- CREATE OR REPLACE TRIGGER secure_employees_del BEFORE DELETE ON employees FOR EACH ROW
++-- BEGIN secure_dml; END;
++--
++-- CREATE OR REPLACE TRIGGER secure_employees
++--   BEFORE INSERT OR UPDATE OR DELETE ON employees
++-- BEGIN
++--   secure_dml;
++-- END secure_employees;
++-- /
++--
++-- ALTER TRIGGER secure_employees DISABLE;
+ 
+ REM **************************************************************************
+ REM procedure to add a row to the JOB_HISTORY table and row trigger 
+Only in corpus/mariadb/hr: hr_compat.sql
+diff -ru -x .gitkeep -x README.md -x README.txt -x hr_install.sql -x hr_uninstall.sql corpus/oracle/hr/hr_create.sql corpus/mariadb/hr/hr_create.sql
+--- corpus/oracle/hr/hr_create.sql	2026-11-03 13:41:00
++++ corpus/mariadb/hr/hr_create.sql	2026-11-04 16:04:03
+@@ -46,6 +46,9 @@
+ rem 
+ rem --------------------------------------------------------------------------
+ 
++-- MariaDB 11.8 port (sql_mode=ORACLE): every change is marked '-- MIGRATION:'.
++-- See migration/COMPATIBILITY_MATRIX.md (HR section).
++
+ SET FEEDBACK 1
+ SET NUMWIDTH 10
+ SET LINESIZE 80
+@@ -60,14 +63,18 @@
+ 
+ Prompt ******  Creating REGIONS table ....
+ 
++-- MIGRATION: inline 'CONSTRAINT <name> NOT NULL' -> 'NOT NULL' (named NOT NULL
++--   constraints are a syntax error, probe T13); column comments moved inline (T20).
+ CREATE TABLE regions
+     ( region_id      NUMBER 
+-       CONSTRAINT  region_id_nn NOT NULL 
+-    , region_name    VARCHAR2(25) 
++       NOT NULL COMMENT 'Primary key of regions table.'
++    , region_name    VARCHAR2(25) COMMENT 'Names of regions. Locations are in the countries of these regions.'
+     );
+ 
+-CREATE UNIQUE INDEX reg_id_pk
+-ON regions (region_id);
++-- MIGRATION: unique index reg_id_pk removed: the PRIMARY KEY below cannot reuse it, so it
++--   would be a second, duplicate index (probe T15). InnoDB names the PK 'PRIMARY'.
++-- CREATE UNIQUE INDEX reg_id_pk
++-- ON regions (region_id);
+ 
+ ALTER TABLE regions
+ ADD ( CONSTRAINT reg_id_pk
+@@ -81,15 +88,20 @@
+ 
+ Prompt ******  Creating COUNTRIES table ....
+ 
++-- MIGRATION: inline 'CONSTRAINT <name> NOT NULL' -> 'NOT NULL' (named NOT NULL
++--   constraints are a syntax error, probe T13); column comments moved inline (T20).
+ CREATE TABLE countries 
+     ( country_id      CHAR(2) 
+-       CONSTRAINT  country_id_nn NOT NULL 
+-    , country_name    VARCHAR2(60) 
+-    , region_id       NUMBER 
++       NOT NULL COMMENT 'Primary key of countries table.'
++    , country_name    VARCHAR2(60) COMMENT 'Country name'
++    , region_id       NUMBER COMMENT 'Region ID for the country. Foreign key to region_id column in the departments table.'
+     , CONSTRAINT     country_c_id_pk 
+         	     PRIMARY KEY (country_id) 
+     ) 
+-    ORGANIZATION INDEX; 
++    -- MIGRATION: ORGANIZATION INDEX removed (syntax error, probe T14). InnoDB tables are
++    --   always clustered on the primary key, so the storage is already index-organized.
++    -- ORGANIZATION INDEX
++    ;
+ 
+ ALTER TABLE countries
+ ADD ( CONSTRAINT countr_reg_fk
+@@ -103,18 +115,27 @@
+ 
+ Prompt ******  Creating LOCATIONS table ....
+ 
++-- MIGRATION: inline 'CONSTRAINT <name> NOT NULL' -> 'NOT NULL' (named NOT NULL
++--   constraints are a syntax error, probe T13); column comments moved inline (T20).
+ CREATE TABLE locations
+-    ( location_id    NUMBER(4)
+-    , street_address VARCHAR2(40)
+-    , postal_code    VARCHAR2(12)
++    ( location_id    NUMBER(4) COMMENT 'Primary key of locations table'
++    , street_address VARCHAR2(40) COMMENT 'Street address of an office, warehouse, or production site of a company.
++Contains building number and street name'
++    , postal_code    VARCHAR2(12) COMMENT 'Postal code of the location of an office, warehouse, or production site 
++of a company. '
+     , city       VARCHAR2(30)
+-	CONSTRAINT     loc_city_nn  NOT NULL
+-    , state_province VARCHAR2(25)
+-    , country_id     CHAR(2)
++	NOT NULL COMMENT 'A not null column that shows city where an office, warehouse, or 
++production site of a company is located. '
++    , state_province VARCHAR2(25) COMMENT 'State or Province where an office, warehouse, or production site of a 
++company is located.'
++    , country_id     CHAR(2) COMMENT 'Country where an office, warehouse, or production site of a company is
++located. Foreign key to country_id column of the countries table.'
+     ) ;
+ 
+-CREATE UNIQUE INDEX loc_id_pk
+-ON locations (location_id) ;
++-- MIGRATION: unique index loc_id_pk removed: the PRIMARY KEY below cannot reuse it, so it
++--   would be a second, duplicate index (probe T15). InnoDB names the PK 'PRIMARY'.
++-- CREATE UNIQUE INDEX loc_id_pk
++-- ON locations (location_id) ;
+ 
+ ALTER TABLE locations
+ ADD ( CONSTRAINT loc_id_pk
+@@ -140,16 +161,22 @@
+ 
+ Prompt ******  Creating DEPARTMENTS table ....
+ 
++-- MIGRATION: inline 'CONSTRAINT <name> NOT NULL' -> 'NOT NULL' (named NOT NULL
++--   constraints are a syntax error, probe T13); column comments moved inline (T20).
+ CREATE TABLE departments
+-    ( department_id    NUMBER(4)
++    ( department_id    NUMBER(4) COMMENT 'Primary key column of departments table.'
+     , department_name  VARCHAR2(30)
+-	CONSTRAINT  dept_name_nn  NOT NULL
+-    , manager_id       NUMBER(6)
+-    , location_id      NUMBER(4)
++	NOT NULL COMMENT 'A not null column that shows name of a department. Administration, 
++Marketing, Purchasing, Human Resources, Shipping, IT, Executive, Public 
++Relations, Sales, Finance, and Accounting. '
++    , manager_id       NUMBER(6) COMMENT 'Manager_id of a department. Foreign key to employee_id column of employees table. The manager_id column of the employee table references this column.'
++    , location_id      NUMBER(4) COMMENT 'Location id where a department is located. Foreign key to location_id column of locations table.'
+     ) ;
+ 
+-CREATE UNIQUE INDEX dept_id_pk
+-ON departments (department_id) ;
++-- MIGRATION: unique index dept_id_pk removed: the PRIMARY KEY below cannot reuse it, so it
++--   would be a second, duplicate index (probe T15). InnoDB names the PK 'PRIMARY'.
++-- CREATE UNIQUE INDEX dept_id_pk
++-- ON departments (department_id) ;
+ 
+ ALTER TABLE departments
+ ADD ( CONSTRAINT dept_id_pk
+@@ -175,16 +202,20 @@
+ 
+ Prompt ******  Creating JOBS table ....
+ 
++-- MIGRATION: inline 'CONSTRAINT <name> NOT NULL' -> 'NOT NULL' (named NOT NULL
++--   constraints are a syntax error, probe T13); column comments moved inline (T20).
+ CREATE TABLE jobs
+-    ( job_id         VARCHAR2(10)
++    ( job_id         VARCHAR2(10) COMMENT 'Primary key of jobs table.'
+     , job_title      VARCHAR2(35)
+-	CONSTRAINT     job_title_nn  NOT NULL
+-    , min_salary     NUMBER(6)
+-    , max_salary     NUMBER(6)
++	NOT NULL COMMENT 'A not null column that shows job title, e.g. AD_VP, FI_ACCOUNTANT'
++    , min_salary     NUMBER(6) COMMENT 'Minimum salary for a job title.'
++    , max_salary     NUMBER(6) COMMENT 'Maximum salary for a job title'
+     ) ;
+ 
+-CREATE UNIQUE INDEX job_id_pk 
+-ON jobs (job_id) ;
++-- MIGRATION: unique index job_id_pk removed: the PRIMARY KEY below cannot reuse it, so it
++--   would be a second, duplicate index (probe T15). InnoDB names the PK 'PRIMARY'.
++-- CREATE UNIQUE INDEX job_id_pk 
++-- ON jobs (job_id) ;
+ 
+ ALTER TABLE jobs
+ ADD ( CONSTRAINT job_id_pk
+@@ -198,44 +229,59 @@
+ 
+ Prompt ******  Creating EMPLOYEES table ....
+ 
++-- MIGRATION: inline 'CONSTRAINT <name> NOT NULL' -> 'NOT NULL' (named NOT NULL
++--   constraints are a syntax error, probe T13); column comments moved inline (T20).
+ CREATE TABLE employees
+-    ( employee_id    NUMBER(6)
+-    , first_name     VARCHAR2(20)
++    ( employee_id    NUMBER(6) COMMENT 'Primary key of employees table.'
++    , first_name     VARCHAR2(20) COMMENT 'First name of the employee. A not null column.'
+     , last_name      VARCHAR2(25)
+-	 CONSTRAINT     emp_last_name_nn  NOT NULL
++	 NOT NULL COMMENT 'Last name of the employee. A not null column.'
+     , email          VARCHAR2(25)
+-	CONSTRAINT     emp_email_nn  NOT NULL
+-    , phone_number   VARCHAR2(20)
++	NOT NULL COMMENT 'Email id of the employee'
++    , phone_number   VARCHAR2(20) COMMENT 'Phone number of the employee; includes country code and area code'
+     , hire_date      DATE
+-	CONSTRAINT     emp_hire_date_nn  NOT NULL
++	NOT NULL COMMENT 'Date when the employee started on this job. A not null column.'
+     , job_id         VARCHAR2(10)
+-	CONSTRAINT     emp_job_nn  NOT NULL
+-    , salary         NUMBER(8,2)
+-    , commission_pct NUMBER(2,2)
+-    , manager_id     NUMBER(6)
+-    , department_id  NUMBER(4)
++	NOT NULL COMMENT 'Current job of the employee; foreign key to job_id column of the 
++jobs table. A not null column.'
++    , salary         NUMBER(8,2) COMMENT 'Monthly salary of the employee. Must be greater 
++than zero (enforced by constraint emp_salary_min)'
++    , commission_pct NUMBER(2,2) COMMENT 'Commission percentage of the employee; Only employees in sales 
++department elgible for commission percentage'
++    , manager_id     NUMBER(6) COMMENT 'Manager id of the employee; has same domain as manager_id in 
++departments table. Foreign key to employee_id column of employees table. 
++(useful for reflexive joins and CONNECT BY query)'
++    , department_id  NUMBER(4) COMMENT 'Department id where employee works; foreign key to department_id 
++column of the departments table'
+     , CONSTRAINT     emp_salary_min
+                      CHECK (salary > 0) 
+     , CONSTRAINT     emp_email_uk
+                      UNIQUE (email)
+     ) ;
+ 
+-CREATE UNIQUE INDEX emp_emp_id_pk
+-ON employees (employee_id) ;
++-- MIGRATION: unique index emp_emp_id_pk removed: the PRIMARY KEY below cannot reuse it, so it
++--   would be a second, duplicate index (probe T15). InnoDB names the PK 'PRIMARY'.
++-- CREATE UNIQUE INDEX emp_emp_id_pk
++-- ON employees (employee_id) ;
+ 
+ 
++-- MIGRATION: PRIMARY KEY added in its own ALTER (InnoDB rejects the self-referencing
++--   emp_manager_fk with errno 150 when the PK it points to is added in the same statement)
+ ALTER TABLE employees
+ ADD ( CONSTRAINT     emp_emp_id_pk
+                      PRIMARY KEY (employee_id)
+-    , CONSTRAINT     emp_dept_fk
++    ) ;
++
++ALTER TABLE employees
++ADD ( CONSTRAINT     emp_dept_fk
+                      FOREIGN KEY (department_id)
+-                      REFERENCES departments
++                      REFERENCES departments (department_id) -- MIGRATION: PK column named (T16)
+     , CONSTRAINT     emp_job_fk
+                      FOREIGN KEY (job_id)
+                       REFERENCES jobs (job_id)
+     , CONSTRAINT     emp_manager_fk
+                      FOREIGN KEY (manager_id)
+-                      REFERENCES employees
++                      REFERENCES employees (employee_id) -- MIGRATION: PK column named (T16)
+     ) ;
+ 
+ ALTER TABLE departments
+@@ -262,35 +308,45 @@
+ 
+ Prompt ******  Creating JOB_HISTORY table ....
+ 
++-- MIGRATION: inline 'CONSTRAINT <name> NOT NULL' -> 'NOT NULL' (named NOT NULL
++--   constraints are a syntax error, probe T13); column comments moved inline (T20).
+ CREATE TABLE job_history
+     ( employee_id   NUMBER(6)
+-	 CONSTRAINT    jhist_employee_nn  NOT NULL
++	 NOT NULL COMMENT 'A not null column in the complex primary key employee_id+start_date. 
++Foreign key to employee_id column of the employee table'
+     , start_date    DATE
+-	CONSTRAINT    jhist_start_date_nn  NOT NULL
++	NOT NULL COMMENT 'A not null column in the complex primary key employee_id+start_date. 
++Must be less than the end_date of the job_history table. (enforced by 
++constraint jhist_date_interval)'
+     , end_date      DATE
+-	CONSTRAINT    jhist_end_date_nn  NOT NULL
++	NOT NULL COMMENT 'Last day of the employee in this job role. A not null column. Must be 
++greater than the start_date of the job_history table. 
++(enforced by constraint jhist_date_interval)'
+     , job_id        VARCHAR2(10)
+-	CONSTRAINT    jhist_job_nn  NOT NULL
+-    , department_id NUMBER(4)
++	NOT NULL COMMENT 'Job role in which the employee worked in the past; foreign key to 
++job_id column in the jobs table. A not null column.'
++    , department_id NUMBER(4) COMMENT 'Department id in which the employee worked in the past; foreign key to deparment_id column in the departments table'
+     , CONSTRAINT    jhist_date_interval
+                     CHECK (end_date > start_date)
+     ) ;
+ 
+-CREATE UNIQUE INDEX jhist_emp_id_st_date_pk 
+-ON job_history (employee_id, start_date) ;
++-- MIGRATION: unique index jhist_emp_id_st_date_pk removed: the PRIMARY KEY below cannot reuse it, so it
++--   would be a second, duplicate index (probe T15). InnoDB names the PK 'PRIMARY'.
++-- CREATE UNIQUE INDEX jhist_emp_id_st_date_pk 
++-- ON job_history (employee_id, start_date) ;
+ 
+ ALTER TABLE job_history
+ ADD ( CONSTRAINT jhist_emp_id_st_date_pk
+       PRIMARY KEY (employee_id, start_date)
+     , CONSTRAINT     jhist_job_fk
+                      FOREIGN KEY (job_id)
+-                     REFERENCES jobs
++                     REFERENCES jobs (job_id) -- MIGRATION: PK column named (T16)
+     , CONSTRAINT     jhist_emp_fk
+                      FOREIGN KEY (employee_id)
+-                     REFERENCES employees
++                     REFERENCES employees (employee_id) -- MIGRATION: PK column named (T16)
+     , CONSTRAINT     jhist_dept_fk
+                      FOREIGN KEY (department_id)
+-                     REFERENCES departments
++                     REFERENCES departments (department_id) -- MIGRATION: PK column named (T16)
+     ) ;
+ 
+ rem ********************************************************************
+@@ -300,7 +356,10 @@
+ 
+ Prompt ******  Creating EMP_DETAILS_VIEW view ...
+ 
+-CREATE OR REPLACE VIEW emp_details_view
++-- MIGRATION: WITH READ ONLY -> ALGORITHM=TEMPTABLE (syntax error, probe D4). Without it this
++--   join view is updatable in MariaDB; TEMPTABLE makes UPDATE/INSERT/DELETE fail (error 1288
++--   instead of ORA-42399). Cost: the view is materialized per query instead of merged.
++CREATE OR REPLACE ALGORITHM=TEMPTABLE VIEW emp_details_view
+   (employee_id,
+    job_id,
+    manager_id,
+@@ -346,7 +405,8 @@
+   AND l.country_id = c.country_id
+   AND c.region_id = r.region_id
+   AND j.job_id = e.job_id 
+-WITH READ ONLY;
++-- WITH READ ONLY
++;
+ 
+ rem ********************************************************************
+ rem Create indexes
+@@ -392,168 +452,75 @@
+ 
+ Prompt ******  Adding table column comments ...
+ 
+-COMMENT ON TABLE regions 
+-IS 'Regions table that contains region numbers and names. references with the Countries table.';
++-- MIGRATION: COMMENT ON TABLE -> ALTER TABLE ... COMMENT = (no COMMENT ON, probe T20);
++--   COMMENT ON COLUMN statements moved into the CREATE TABLE column definitions above.
+ 
+-COMMENT ON COLUMN regions.region_id
+-IS 'Primary key of regions table.';
++ALTER TABLE regions COMMENT = 'Regions table that contains region numbers and names. references with the Countries table.';
+ 
+-COMMENT ON COLUMN regions.region_name
+-IS 'Names of regions. Locations are in the countries of these regions.';
+ 
+-COMMENT ON TABLE locations
+-IS 'Locations table that contains specific address of a specific office,
++
++ALTER TABLE locations COMMENT = 'Locations table that contains specific address of a specific office,
+ warehouse, and/or production site of a company. Does not store addresses /
+ locations of customers. references with the departments and countries tables. ';
+ 
+-COMMENT ON COLUMN locations.location_id
+-IS 'Primary key of locations table';
+ 
+-COMMENT ON COLUMN locations.street_address
+-IS 'Street address of an office, warehouse, or production site of a company.
+-Contains building number and street name';
+ 
+-COMMENT ON COLUMN locations.postal_code
+-IS 'Postal code of the location of an office, warehouse, or production site 
+-of a company. ';
+ 
+-COMMENT ON COLUMN locations.city
+-IS 'A not null column that shows city where an office, warehouse, or 
+-production site of a company is located. ';
+ 
+-COMMENT ON COLUMN locations.state_province
+-IS 'State or Province where an office, warehouse, or production site of a 
+-company is located.';
+ 
+-COMMENT ON COLUMN locations.country_id
+-IS 'Country where an office, warehouse, or production site of a company is
+-located. Foreign key to country_id column of the countries table.';
+ 
+ 
+ rem *********************************************
+ 
+-COMMENT ON TABLE departments
+-IS 'Departments table that shows details of departments where employees 
++ALTER TABLE departments COMMENT = 'Departments table that shows details of departments where employees 
+ work. references with locations, employees, and job_history tables.';
+ 
+-COMMENT ON COLUMN departments.department_id
+-IS 'Primary key column of departments table.';
+ 
+-COMMENT ON COLUMN departments.department_name
+-IS 'A not null column that shows name of a department. Administration, 
+-Marketing, Purchasing, Human Resources, Shipping, IT, Executive, Public 
+-Relations, Sales, Finance, and Accounting. ';
+ 
+-COMMENT ON COLUMN departments.manager_id
+-IS 'Manager_id of a department. Foreign key to employee_id column of employees table. The manager_id column of the employee table references this column.';
+ 
+-COMMENT ON COLUMN departments.location_id
+-IS 'Location id where a department is located. Foreign key to location_id column of locations table.';
+ 
+ 
+ rem *********************************************
+ 
+-COMMENT ON TABLE job_history
+-IS 'Table that stores job history of the employees. If an employee 
++ALTER TABLE job_history COMMENT = 'Table that stores job history of the employees. If an employee 
+ changes departments within the job or changes jobs within the department, 
+ new rows get inserted into this table with old job information of the 
+ employee. Contains a complex primary key: employee_id+start_date.
+ References with jobs, employees, and departments tables.';
+ 
+-COMMENT ON COLUMN job_history.employee_id
+-  IS 'A not null column in the complex primary key employee_id+start_date. 
+-Foreign key to employee_id column of the employee table';
+ 
+-COMMENT ON COLUMN job_history.start_date
+-  IS 'A not null column in the complex primary key employee_id+start_date. 
+-Must be less than the end_date of the job_history table. (enforced by 
+-constraint jhist_date_interval)';
+ 
+-COMMENT ON COLUMN job_history.end_date
+-  IS 'Last day of the employee in this job role. A not null column. Must be 
+-greater than the start_date of the job_history table. 
+-(enforced by constraint jhist_date_interval)';
+ 
+-COMMENT ON COLUMN job_history.job_id
+-  IS 'Job role in which the employee worked in the past; foreign key to 
+-job_id column in the jobs table. A not null column.';
+ 
+-COMMENT ON COLUMN job_history.department_id
+-  IS 'Department id in which the employee worked in the past; foreign key to deparment_id column in the departments table';
+ 
+ rem *********************************************
+ 
+-COMMENT ON TABLE countries
+-  IS 'country table. References with locations table.';
++ALTER TABLE countries COMMENT = 'country table. References with locations table.';
+ 
+-COMMENT ON COLUMN countries.country_id
+-  IS 'Primary key of countries table.';
+ 
+-COMMENT ON COLUMN countries.country_name
+-  IS 'Country name';
+ 
+-COMMENT ON COLUMN countries.region_id
+-  IS 'Region ID for the country. Foreign key to region_id column in the departments table.';
+ 
+ rem *********************************************
+ 
+-COMMENT ON TABLE jobs
+-  IS 'jobs table with job titles and salary ranges.
++ALTER TABLE jobs COMMENT = 'jobs table with job titles and salary ranges.
+ References with employees and job_history table.';
+ 
+-COMMENT ON COLUMN jobs.job_id
+-  IS 'Primary key of jobs table.';
+ 
+-COMMENT ON COLUMN jobs.job_title
+-  IS 'A not null column that shows job title, e.g. AD_VP, FI_ACCOUNTANT';
+ 
+-COMMENT ON COLUMN jobs.min_salary
+-  IS 'Minimum salary for a job title.';
+ 
+-COMMENT ON COLUMN jobs.max_salary
+-  IS 'Maximum salary for a job title';
+ 
+ rem *********************************************
+ 
+-COMMENT ON TABLE employees
+-  IS 'employees table. References with departments,
++ALTER TABLE employees COMMENT = 'employees table. References with departments,
+ jobs, job_history tables. Contains a self reference.';
+ 
+-COMMENT ON COLUMN employees.employee_id
+-  IS 'Primary key of employees table.';
+ 
+-COMMENT ON COLUMN employees.first_name
+-  IS 'First name of the employee. A not null column.';
+ 
+-COMMENT ON COLUMN employees.last_name
+-  IS 'Last name of the employee. A not null column.';
+ 
+-COMMENT ON COLUMN employees.email
+-  IS 'Email id of the employee';
+ 
+-COMMENT ON COLUMN employees.phone_number
+-  IS 'Phone number of the employee; includes country code and area code';
+ 
+-COMMENT ON COLUMN employees.hire_date
+-  IS 'Date when the employee started on this job. A not null column.';
+ 
+-COMMENT ON COLUMN employees.job_id
+-  IS 'Current job of the employee; foreign key to job_id column of the 
+-jobs table. A not null column.';
+ 
+-COMMENT ON COLUMN employees.salary
+-  IS 'Monthly salary of the employee. Must be greater 
+-than zero (enforced by constraint emp_salary_min)';
+ 
+-COMMENT ON COLUMN employees.commission_pct
+-  IS 'Commission percentage of the employee; Only employees in sales 
+-department elgible for commission percentage';
+ 
+-COMMENT ON COLUMN employees.manager_id
+-  IS 'Manager id of the employee; has same domain as manager_id in 
+-departments table. Foreign key to employee_id column of employees table. 
+-(useful for reflexive joins and CONNECT BY query)';
+ 
+-COMMENT ON COLUMN employees.department_id
+-  IS 'Department id where employee works; foreign key to department_id 
+-column of the departments table';
+diff -ru -x .gitkeep -x README.md -x README.txt -x hr_install.sql -x hr_uninstall.sql corpus/oracle/hr/hr_populate.sql corpus/mariadb/hr/hr_populate.sql
+--- corpus/oracle/hr/hr_populate.sql	2026-11-03 13:41:00
++++ corpus/mariadb/hr/hr_populate.sql	2026-11-04 16:04:27
+@@ -51,8 +51,13 @@
+ rem --------------------------------------------------------------------------
+ 
+ 
++-- MariaDB 11.8 port (sql_mode=ORACLE): every change is marked '-- MIGRATION:'.
++-- See migration/COMPATIBILITY_MATRIX.md (HR section).
++
+ SET VERIFY OFF
+-ALTER SESSION SET NLS_LANGUAGE=American;
++-- MIGRATION: ALTER SESSION SET NLS_LANGUAGE -> lc_time_names (no ALTER SESSION, probe D5).
++--   Both set the language of day/month names (TO_CHAR 'DY', 'MON').
++SET lc_time_names = 'en_US';
+ 
+ REM *************************** insert data into the REGIONS table
+ 
+@@ -465,8 +470,11 @@
+ 
+ REM disable integrity constraint to EMPLOYEES to load data
+ 
++-- MIGRATION: DISABLE CONSTRAINT -> DROP FOREIGN KEY (no DISABLE CONSTRAINT, probe T18).
++--   Not SET FOREIGN_KEY_CHECKS = 0: that turns off every FK in the session, and turning it
++--   back on does not check the rows loaded meanwhile.
+ ALTER TABLE departments
+-  DISABLE CONSTRAINT dept_mgr_fk;
++  DROP FOREIGN KEY dept_mgr_fk;
+ 
+ BEGIN
+   INSERT INTO departments VALUES
+@@ -802,6 +810,11 @@
+ 
+ Prompt ****** Populating EMPLOYEES table ....
+ 
++-- MIGRATION: TO_DATE('dd-mm-yyyy', 'dd-MM-yyyy') -> DATE 'yyyy-mm-dd' in every row (127x).
++--   11.8 has no TO_DATE (probe F14), and a shim cannot be shared with 13.0, where TO_DATE
++--   is a native keyword and CREATE FUNCTION to_date is a syntax error. The literal is
++--   exact, and also valid Oracle (probe F13).
++
+ BEGIN
+   INSERT INTO employees VALUES
+       ( 100
+@@ -809,7 +822,7 @@
+       , 'King'
+       , 'SKING'
+       , '1.515.555.0100'
+-      , TO_DATE('17-06-2013', 'dd-MM-yyyy')
++      , DATE '2013-06-17'
+       , 'AD_PRES'
+       , 24000
+       , NULL
+@@ -823,7 +836,7 @@
+       , 'Yang'
+       , 'NYANG'
+       , '1.515.555.0101'
+-      , TO_DATE('21-09-2015', 'dd-MM-yyyy')
++      , DATE '2015-09-21'
+       , 'AD_VP'
+       , 17000
+       , NULL
+@@ -837,7 +850,7 @@
+       , 'Garcia'
+       , 'LGARCIA'
+       , '1.515.555.0102'
+-      , TO_DATE('13-01-2011', 'dd-MM-yyyy')
++      , DATE '2011-01-13'
+       , 'AD_VP'
+       , 17000
+       , NULL
+@@ -851,7 +864,7 @@
+       , 'James'
+       , 'AJAMES'
+       , '1.590.555.0103'
+-      , TO_DATE('03-01-2016', 'dd-MM-yyyy')
++      , DATE '2016-01-03'
+       , 'IT_PROG'
+       , 9000
+       , NULL
+@@ -865,7 +878,7 @@
+       , 'Miller'
+       , 'BMILLER'
+       , '1.590.555.0104'
+-      , TO_DATE('21-05-2017', 'dd-MM-yyyy')
++      , DATE '2017-05-21'
+       , 'IT_PROG'
+       , 6000
+       , NULL
+@@ -879,7 +892,7 @@
+       , 'Williams'
+       , 'DWILLIAMS'
+       , '1.590.555.0105'
+-      , TO_DATE('25-06-2015', 'dd-MM-yyyy')
++      , DATE '2015-06-25'
+       , 'IT_PROG'
+       , 4800
+       , NULL
+@@ -893,7 +906,7 @@
+       , 'Jackson'
+       , 'VJACKSON'
+       , '1.590.555.0106'
+-      , TO_DATE('05-02-2016', 'dd-MM-yyyy')
++      , DATE '2016-02-05'
+       , 'IT_PROG'
+       , 4800
+       , NULL
+@@ -907,7 +920,7 @@
+       , 'Nguyen'
+       , 'DNGUYEN'
+       , '1.590.555.0107'
+-      , TO_DATE('07-02-2017', 'dd-MM-yyyy')
++      , DATE '2017-02-07'
+       , 'IT_PROG'
+       , 4200
+       , NULL
+@@ -921,7 +934,7 @@
+       , 'Gruenberg'
+       , 'NGRUENBE'
+       , '1.515.555.0108'
+-      , TO_DATE('17-08-2012', 'dd-MM-yyyy')
++      , DATE '2012-08-17'
+       , 'FI_MGR'
+       , 12008
+       , NULL
+@@ -935,7 +948,7 @@
+       , 'Faviet'
+       , 'DFAVIET'
+       , '1.515.555.0109'
+-      , TO_DATE('16-08-2012', 'dd-MM-yyyy')
++      , DATE '2012-08-16'
+       , 'FI_ACCOUNT'
+       , 9000
+       , NULL
+@@ -949,7 +962,7 @@
+       , 'Chen'
+       , 'JCHEN'
+       , '1.515.555.0110'
+-      , TO_DATE('28-09-2015', 'dd-MM-yyyy')
++      , DATE '2015-09-28'
+       , 'FI_ACCOUNT'
+       , 8200
+       , NULL
+@@ -963,7 +976,7 @@
+       , 'Sciarra'
+       , 'ISCIARRA'
+       , '1.515.555.0111'
+-      , TO_DATE('30-09-2015', 'dd-MM-yyyy')
++      , DATE '2015-09-30'
+       , 'FI_ACCOUNT'
+       , 7700
+       , NULL
+@@ -977,7 +990,7 @@
+       , 'Urman'
+       , 'JMURMAN'
+       , '1.515.555.0112'
+-      , TO_DATE('07-03-2016', 'dd-MM-yyyy')
++      , DATE '2016-03-07'
+       , 'FI_ACCOUNT'
+       , 7800
+       , NULL
+@@ -991,7 +1004,7 @@
+       , 'Popp'
+       , 'LPOPP'
+       , '1.515.555.0113'
+-      , TO_DATE('07-12-2017', 'dd-MM-yyyy')
++      , DATE '2017-12-07'
+       , 'FI_ACCOUNT'
+       , 6900
+       , NULL
+@@ -1005,7 +1018,7 @@
+       , 'Li'
+       , 'DLI'
+       , '1.515.555.0114'
+-      , TO_DATE('07-12-2012', 'dd-MM-yyyy')
++      , DATE '2012-12-07'
+       , 'PU_MAN'
+       , 11000
+       , NULL
+@@ -1019,7 +1032,7 @@
+       , 'Khoo'
+       , 'AKHOO'
+       , '1.515.555.0115'
+-      , TO_DATE('18-05-2013', 'dd-MM-yyyy')
++      , DATE '2013-05-18'
+       , 'PU_CLERK'
+       , 3100
+       , NULL
+@@ -1033,7 +1046,7 @@
+       , 'Baida'
+       , 'SBAIDA'
+       , '1.515.555.0116'
+-      , TO_DATE('24-12-2015', 'dd-MM-yyyy')
++      , DATE '2015-12-24'
+       , 'PU_CLERK'
+       , 2900
+       , NULL
+@@ -1047,7 +1060,7 @@
+       , 'Tobias'
+       , 'STOBIAS'
+       , '1.515.555.0117'
+-      , TO_DATE('24-07-2015', 'dd-MM-yyyy')
++      , DATE '2015-07-24'
+       , 'PU_CLERK'
+       , 2800
+       , NULL
+@@ -1061,7 +1074,7 @@
+       , 'Himuro'
+       , 'GHIMURO'
+       , '1.515.555.0118'
+-      , TO_DATE('15-11-2016', 'dd-MM-yyyy')
++      , DATE '2016-11-15'
+       , 'PU_CLERK'
+       , 2600
+       , NULL
+@@ -1075,7 +1088,7 @@
+       , 'Colmenares'
+       , 'KCOLMENA'
+       , '1.515.555.0119'
+-      , TO_DATE('10-08-2017', 'dd-MM-yyyy')
++      , DATE '2017-08-10'
+       , 'PU_CLERK'
+       , 2500
+       , NULL
+@@ -1089,7 +1102,7 @@
+       , 'Weiss'
+       , 'MWEISS'
+       , '1.650.555.0120'
+-      , TO_DATE('18-07-2014', 'dd-MM-yyyy')
++      , DATE '2014-07-18'
+       , 'ST_MAN'
+       , 8000
+       , NULL
+@@ -1103,7 +1116,7 @@
+       , 'Fripp'
+       , 'AFRIPP'
+       , '1.650.555.0121'
+-      , TO_DATE('10-04-2015', 'dd-MM-yyyy')
++      , DATE '2015-04-10'
+       , 'ST_MAN'
+       , 8200
+       , NULL
+@@ -1117,7 +1130,7 @@
+       , 'Kaufling'
+       , 'PKAUFLIN'
+       , '1.650.555.0122'
+-      , TO_DATE('01-05-2013', 'dd-MM-yyyy')
++      , DATE '2013-05-01'
+       , 'ST_MAN'
+       , 7900
+       , NULL
+@@ -1131,7 +1144,7 @@
+       , 'Vollman'
+       , 'SVOLLMAN'
+       , '1.650.555.0123'
+-      , TO_DATE('10-10-2015', 'dd-MM-yyyy')
++      , DATE '2015-10-10'
+       , 'ST_MAN'
+       , 6500
+       , NULL
+@@ -1145,7 +1158,7 @@
+       , 'Mourgos'
+       , 'KMOURGOS'
+       , '1.650.555.0124'
+-      , TO_DATE('16-11-2017', 'dd-MM-yyyy')
++      , DATE '2017-11-16'
+       , 'ST_MAN'
+       , 5800
+       , NULL
+@@ -1159,7 +1172,7 @@
+       , 'Nayer'
+       , 'JNAYER'
+       , '1.650.555.0125'
+-      , TO_DATE('16-07-2015', 'dd-MM-yyyy')
++      , DATE '2015-07-16'
+       , 'ST_CLERK'
+       , 3200
+       , NULL
+@@ -1173,7 +1186,7 @@
+       , 'Mikkilineni'
+       , 'IMIKKILI'
+       , '1.650.555.0126'
+-      , TO_DATE('28-09-2016', 'dd-MM-yyyy')
++      , DATE '2016-09-28'
+       , 'ST_CLERK'
+       , 2700
+       , NULL
+@@ -1187,7 +1200,7 @@
+       , 'Landry'
+       , 'JLANDRY'
+       , '1.650.555.0127'
+-      , TO_DATE('14-01-2017', 'dd-MM-yyyy')
++      , DATE '2017-01-14'
+       , 'ST_CLERK'
+       , 2400
+       , NULL
+@@ -1201,7 +1214,7 @@
+       , 'Markle'
+       , 'SMARKLE'
+       , '1.650.555.0128'
+-      , TO_DATE('08-03-2018', 'dd-MM-yyyy')
++      , DATE '2018-03-08'
+       , 'ST_CLERK'
+       , 2200
+       , NULL
+@@ -1215,7 +1228,7 @@
+       , 'Bissot'
+       , 'LBISSOT'
+       , '1.650.555.0129'
+-      , TO_DATE('20-08-2015', 'dd-MM-yyyy')
++      , DATE '2015-08-20'
+       , 'ST_CLERK'
+       , 3300
+       , NULL
+@@ -1229,7 +1242,7 @@
+       , 'Atkinson'
+       , 'MATKINSO'
+       , '1.650.555.0130'
+-      , TO_DATE('30-10-2015', 'dd-MM-yyyy')
++      , DATE '2015-10-30'
+       , 'ST_CLERK'
+       , 2800
+       , NULL
+@@ -1243,7 +1256,7 @@
+       , 'Marlow'
+       , 'JAMRLOW'
+       , '1.650.555.0131'
+-      , TO_DATE('16-02-2015', 'dd-MM-yyyy')
++      , DATE '2015-02-16'
+       , 'ST_CLERK'
+       , 2500
+       , NULL
+@@ -1257,7 +1270,7 @@
+       , 'Olson'
+       , 'TJOLSON'
+       , '1.650.555.0132'
+-      , TO_DATE('10-04-2017', 'dd-MM-yyyy')
++      , DATE '2017-04-10'
+       , 'ST_CLERK'
+       , 2100
+       , NULL
+@@ -1271,7 +1284,7 @@
+       , 'Mallin'
+       , 'JMALLIN'
+       , '1.650.555.0133'
+-      , TO_DATE('14-06-2014', 'dd-MM-yyyy')
++      , DATE '2014-06-14'
+       , 'ST_CLERK'
+       , 3300
+       , NULL
+@@ -1285,7 +1298,7 @@
+       , 'Rogers'
+       , 'MROGERS'
+       , '1.650.555.0134'
+-      , TO_DATE('26-08-2016', 'dd-MM-yyyy')
++      , DATE '2016-08-26'
+       , 'ST_CLERK'
+       , 2900
+       , NULL
+@@ -1299,7 +1312,7 @@
+       , 'Gee'
+       , 'KGEE'
+       , '1.650.555.0135'
+-      , TO_DATE('12-12-2017', 'dd-MM-yyyy')
++      , DATE '2017-12-12'
+       , 'ST_CLERK'
+       , 2400
+       , NULL
+@@ -1313,7 +1326,7 @@
+       , 'Philtanker'
+       , 'HPHILTAN'
+       , '1.650.555.0136'
+-      , TO_DATE('06-02-2018', 'dd-MM-yyyy')
++      , DATE '2018-02-06'
+       , 'ST_CLERK'
+       , 2200
+       , NULL
+@@ -1327,7 +1340,7 @@
+       , 'Ladwig'
+       , 'RLADWIG'
+       , '1.650.555.0137'
+-      , TO_DATE('14-07-2013', 'dd-MM-yyyy')
++      , DATE '2013-07-14'
+       , 'ST_CLERK'
+       , 3600
+       , NULL
+@@ -1341,7 +1354,7 @@
+       , 'Stiles'
+       , 'SSTILES'
+       , '1.650.555.0138'
+-      , TO_DATE('26-10-2015', 'dd-MM-yyyy')
++      , DATE '2015-10-26'
+       , 'ST_CLERK'
+       , 3200
+       , NULL
+@@ -1355,7 +1368,7 @@
+       , 'Seo'
+       , 'JSEO'
+       , '1.650.555.0139'
+-      , TO_DATE('12-02-2016', 'dd-MM-yyyy')
++      , DATE '2016-02-12'
+       , 'ST_CLERK'
+       , 2700
+       , NULL
+@@ -1369,7 +1382,7 @@
+       , 'Patel'
+       , 'JPATEL'
+       , '1.650.555.0140'
+-      , TO_DATE('06-04-2016', 'dd-MM-yyyy')
++      , DATE '2016-04-06'
+       , 'ST_CLERK'
+       , 2500
+       , NULL
+@@ -1383,7 +1396,7 @@
+       , 'Rajs'
+       , 'TRAJS'
+       , '1.650.555.0141'
+-      , TO_DATE('17-10-2013', 'dd-MM-yyyy')
++      , DATE '2013-10-17'
+       , 'ST_CLERK'
+       , 3500
+       , NULL
+@@ -1397,7 +1410,7 @@
+       , 'Davies'
+       , 'CDAVIES'
+       , '1.650.555.0142'
+-      , TO_DATE('29-01-2015', 'dd-MM-yyyy')
++      , DATE '2015-01-29'
+       , 'ST_CLERK'
+       , 3100
+       , NULL
+@@ -1411,7 +1424,7 @@
+       , 'Matos'
+       , 'RMATOS'
+       , '1.650.555.0143'
+-      , TO_DATE('15-03-2016', 'dd-MM-yyyy')
++      , DATE '2016-03-15'
+       , 'ST_CLERK'
+       , 2600
+       , NULL
+@@ -1425,7 +1438,7 @@
+       , 'Vargas'
+       , 'PVARGAS'
+       , '1.650.555.0144'
+-      , TO_DATE('09-07-2016', 'dd-MM-yyyy')
++      , DATE '2016-07-09'
+       , 'ST_CLERK'
+       , 2500
+       , NULL
+@@ -1439,7 +1452,7 @@
+       , 'Singh'
+       , 'JSINGH'
+       , '44.1632.960000'
+-      , TO_DATE('01-10-2014', 'dd-MM-yyyy')
++      , DATE '2014-10-01'
+       , 'SA_MAN'
+       , 14000
+       , .4
+@@ -1453,7 +1466,7 @@
+       , 'Partners'
+       , 'KPARTNER'
+       , '44.1632.960001'
+-      , TO_DATE('05-01-2015', 'dd-MM-yyyy')
++      , DATE '2015-01-05'
+       , 'SA_MAN'
+       , 13500
+       , .3
+@@ -1467,7 +1480,7 @@
+       , 'Errazuriz'
+       , 'AERRAZUR'
+       , '44.1632.960002'
+-      , TO_DATE('10-03-2015', 'dd-MM-yyyy')
++      , DATE '2015-03-10'
+       , 'SA_MAN'
+       , 12000
+       , .3
+@@ -1481,7 +1494,7 @@
+       , 'Cambrault'
+       , 'GCAMBRAU'
+       , '44.1632.960003'
+-      , TO_DATE('15-10-2017', 'dd-MM-yyyy')
++      , DATE '2017-10-15'
+       , 'SA_MAN'
+       , 11000
+       , .3
+@@ -1495,7 +1508,7 @@
+       , 'Zlotkey'
+       , 'EZLOTKEY'
+       , '44.1632.960004'
+-      , TO_DATE('29-01-2018', 'dd-MM-yyyy')
++      , DATE '2018-01-29'
+       , 'SA_MAN'
+       , 10500
+       , .2
+@@ -1509,7 +1522,7 @@
+       , 'Tucker'
+       , 'STUCKER'
+       , '44.1632.960005'
+-      , TO_DATE('30-01-2015', 'dd-MM-yyyy')
++      , DATE '2015-01-30'
+       , 'SA_REP'
+       , 10000
+       , .3
+@@ -1523,7 +1536,7 @@
+       , 'Bernstein'
+       , 'DBERNSTE'
+       , '44.1632.960006'
+-      , TO_DATE('24-03-2015', 'dd-MM-yyyy')
++      , DATE '2015-03-24'
+       , 'SA_REP'
+       , 9500
+       , .25
+@@ -1537,7 +1550,7 @@
+       , 'Hall'
+       , 'PHALL'
+       , '44.1632.960007'
+-      , TO_DATE('20-08-2015', 'dd-MM-yyyy')
++      , DATE '2015-08-20'
+       , 'SA_REP'
+       , 9000
+       , .25
+@@ -1551,7 +1564,7 @@
+       , 'Olsen'
+       , 'COLSEN'
+       , '44.1632.960008'
+-      , TO_DATE('30-03-2016', 'dd-MM-yyyy')
++      , DATE '2016-03-30'
+       , 'SA_REP'
+       , 8000
+       , .2
+@@ -1565,7 +1578,7 @@
+       , 'Cambrault'
+       , 'NCAMBRAU'
+       , '44.1632.960009'
+-      , TO_DATE('09-12-2016', 'dd-MM-yyyy')
++      , DATE '2016-12-09'
+       , 'SA_REP'
+       , 7500
+       , .2
+@@ -1579,7 +1592,7 @@
+       , 'Tuvault'
+       , 'OTUVAULT'
+       , '44.1632.960010'
+-      , TO_DATE('23-11-2017', 'dd-MM-yyyy')
++      , DATE '2017-11-23'
+       , 'SA_REP'
+       , 7000
+       , .15
+@@ -1593,7 +1606,7 @@
+       , 'King'
+       , 'JKING'
+       , '44.1632.960011'
+-      , TO_DATE('30-01-2014', 'dd-MM-yyyy')
++      , DATE '2014-01-30'
+       , 'SA_REP'
+       , 10000
+       , .35
+@@ -1607,7 +1620,7 @@
+       , 'Sully'
+       , 'PSULLY'
+       , '44.1632.960012'
+-      , TO_DATE('04-03-2014', 'dd-MM-yyyy')
++      , DATE '2014-03-04'
+       , 'SA_REP'
+       , 9500
+       , .35
+@@ -1621,7 +1634,7 @@
+       , 'McEwen'
+       , 'AMCEWEN'
+       , '44.1632.960013'
+-      , TO_DATE('01-08-2014', 'dd-MM-yyyy')
++      , DATE '2014-08-01'
+       , 'SA_REP'
+       , 9000
+       , .35
+@@ -1635,7 +1648,7 @@
+       , 'Smith'
+       , 'LSMITH'
+       , '44.1632.960014'
+-      , TO_DATE('10-03-2015', 'dd-MM-yyyy')
++      , DATE '2015-03-10'
+       , 'SA_REP'
+       , 8000
+       , .3
+@@ -1649,7 +1662,7 @@
+       , 'Doran'
+       , 'LDORAN'
+       , '44.1632.960015'
+-      , TO_DATE('15-12-2015', 'dd-MM-yyyy')
++      , DATE '2015-12-15'
+       , 'SA_REP'
+       , 7500
+       , .3
+@@ -1663,7 +1676,7 @@
+       , 'Sewall'
+       , 'SSEWALL'
+       , '44.1632.960016'
+-      , TO_DATE('03-11-2016', 'dd-MM-yyyy')
++      , DATE '2016-11-03'
+       , 'SA_REP'
+       , 7000
+       , .25
+@@ -1677,7 +1690,7 @@
+       , 'Vishney'
+       , 'CVISHNEY'
+       , '44.1632.960017'
+-      , TO_DATE('11-11-2015', 'dd-MM-yyyy')
++      , DATE '2015-11-11'
+       , 'SA_REP'
+       , 10500
+       , .25
+@@ -1691,7 +1704,7 @@
+       , 'Greene'
+       , 'DGREENE'
+       , '44.1632.960018'
+-      , TO_DATE('19-03-2017', 'dd-MM-yyyy')
++      , DATE '2017-03-19'
+       , 'SA_REP'
+       , 9500
+       , .15
+@@ -1705,7 +1718,7 @@
+       , 'Marvins'
+       , 'MMARVINS'
+       , '44.1632.960019'
+-      , TO_DATE('24-01-2018', 'dd-MM-yyyy')
++      , DATE '2018-01-24'
+       , 'SA_REP'
+       , 7200
+       , .10
+@@ -1719,7 +1732,7 @@
+       , 'Lee'
+       , 'DLEE'
+       , '44.1632.960020'
+-      , TO_DATE('23-02-2018', 'dd-MM-yyyy')
++      , DATE '2018-02-23'
+       , 'SA_REP'
+       , 6800
+       , .1
+@@ -1733,7 +1746,7 @@
+       , 'Ande'
+       , 'SANDE'
+       , '44.1632.960021'
+-      , TO_DATE('24-03-2018', 'dd-MM-yyyy')
++      , DATE '2018-03-24'
+       , 'SA_REP'
+       , 6400
+       , .10
+@@ -1747,7 +1760,7 @@
+       , 'Banda'
+       , 'ABANDA'
+       , '44.1632.960022'
+-      , TO_DATE('21-04-2018', 'dd-MM-yyyy')
++      , DATE '2018-04-21'
+       , 'SA_REP'
+       , 6200
+       , .10
+@@ -1761,7 +1774,7 @@
+       , 'Ozer'
+       , 'LOZER'
+       , '44.1632.960023'
+-      , TO_DATE('11-03-2015', 'dd-MM-yyyy')
++      , DATE '2015-03-11'
+       , 'SA_REP'
+       , 11500
+       , .25
+@@ -1775,7 +1788,7 @@
+       , 'Bloom'
+       , 'HBLOOM'
+       , '44.1632.960024'
+-      , TO_DATE('23-03-2016', 'dd-MM-yyyy')
++      , DATE '2016-03-23'
+       , 'SA_REP'
+       , 10000
+       , .20
+@@ -1789,7 +1802,7 @@
+       , 'Fox'
+       , 'TFOX'
+       , '44.1632.960025'
+-      , TO_DATE('24-01-2016', 'dd-MM-yyyy')
++      , DATE '2016-01-24'
+       , 'SA_REP'
+       , 9600
+       , .20
+@@ -1803,7 +1816,7 @@
+       , 'Smith'
+       , 'WSMITH'
+       , '44.1632.960026'
+-      , TO_DATE('23-02-2017', 'dd-MM-yyyy')
++      , DATE '2017-02-23'
+       , 'SA_REP'
+       , 7400
+       , .15
+@@ -1817,7 +1830,7 @@
+       , 'Bates'
+       , 'EBATES'
+       , '44.1632.960027'
+-      , TO_DATE('24-03-2017', 'dd-MM-yyyy')
++      , DATE '2017-03-24'
+       , 'SA_REP'
+       , 7300
+       , .15
+@@ -1831,7 +1844,7 @@
+       , 'Kumar'
+       , 'SKUMAR'
+       , '44.1632.960028'
+-      , TO_DATE('21-04-2018', 'dd-MM-yyyy')
++      , DATE '2018-04-21'
+       , 'SA_REP'
+       , 6100
+       , .10
+@@ -1845,7 +1858,7 @@
+       , 'Abel'
+       , 'EABEL'
+       , '44.1632.960029'
+-      , TO_DATE('11-05-2014', 'dd-MM-yyyy')
++      , DATE '2014-05-11'
+       , 'SA_REP'
+       , 11000
+       , .30
+@@ -1859,7 +1872,7 @@
+       , 'Hutton'
+       , 'AHUTTON'
+       , '44.1632.960030'
+-      , TO_DATE('19-03-2015', 'dd-MM-yyyy')
++      , DATE '2015-03-19'
+       , 'SA_REP'
+       , 8800
+       , .25
+@@ -1873,7 +1886,7 @@
+       , 'Taylor'
+       , 'JTAYLOR'
+       , '44.1632.960031'
+-      , TO_DATE('24-03-2016', 'dd-MM-yyyy')
++      , DATE '2016-03-24'
+       , 'SA_REP'
+       , 8600
+       , .20
+@@ -1887,7 +1900,7 @@
+       , 'Livingston'
+       , 'JLIVINGS'
+       , '44.1632.960032'
+-      , TO_DATE('23-04-2016', 'dd-MM-yyyy')
++      , DATE '2016-04-23'
+       , 'SA_REP'
+       , 8400
+       , .20
+@@ -1901,7 +1914,7 @@
+       , 'Grant'
+       , 'KGRANT'
+       , '44.1632.960033'
+-      , TO_DATE('24-05-2017', 'dd-MM-yyyy')
++      , DATE '2017-05-24'
+       , 'SA_REP'
+       , 7000
+       , .15
+@@ -1915,7 +1928,7 @@
+       , 'Johnson'
+       , 'CJOHNSON'
+       , '44.1632.960034'
+-      , TO_DATE('04-01-2018', 'dd-MM-yyyy')
++      , DATE '2018-01-04'
+       , 'SA_REP'
+       , 6200
+       , .10
+@@ -1929,7 +1942,7 @@
+       , 'Taylor'
+       , 'WTAYLOR'
+       , '1.650.555.0145'
+-      , TO_DATE('24-01-2016', 'dd-MM-yyyy')
++      , DATE '2016-01-24'
+       , 'SH_CLERK'
+       , 3200
+       , NULL
+@@ -1943,7 +1956,7 @@
+       , 'Fleaur'
+       , 'JFLEAUR'
+       , '1.650.555.0146'
+-      , TO_DATE('23-02-2016', 'dd-MM-yyyy')
++      , DATE '2016-02-23'
+       , 'SH_CLERK'
+       , 3100
+       , NULL
+@@ -1957,7 +1970,7 @@
+       , 'Sullivan'
+       , 'MSULLIVA'
+       , '1.650.555.0147'
+-      , TO_DATE('21-06-2017', 'dd-MM-yyyy')
++      , DATE '2017-06-21'
+       , 'SH_CLERK'
+       , 2500
+       , NULL
+@@ -1971,7 +1984,7 @@
+       , 'Geoni'
+       , 'GGEONI'
+       , '1.650.555.0148'
+-      , TO_DATE('03-02-2018', 'dd-MM-yyyy')
++      , DATE '2018-02-03'
+       , 'SH_CLERK'
+       , 2800
+       , NULL
+@@ -1985,7 +1998,7 @@
+       , 'Sarchand'
+       , 'NSARCHAN'
+       , '1.650.555.0149'
+-      , TO_DATE('27-01-2014', 'dd-MM-yyyy')
++      , DATE '2014-01-27'
+       , 'SH_CLERK'
+       , 4200
+       , NULL
+@@ -1999,7 +2012,7 @@
+       , 'Bull'
+       , 'ABULL'
+       , '1.650.555.0150'
+-      , TO_DATE('20-02-2015', 'dd-MM-yyyy')
++      , DATE '2015-02-20'
+       , 'SH_CLERK'
+       , 4100
+       , NULL
+@@ -2013,7 +2026,7 @@
+       , 'Dellinger'
+       , 'JDELLING'
+       , '1.650.555.0151'
+-      , TO_DATE('24-06-2016', 'dd-MM-yyyy')
++      , DATE '2016-06-24'
+       , 'SH_CLERK'
+       , 3400
+       , NULL
+@@ -2027,7 +2040,7 @@
+       , 'Cabrio'
+       , 'ACABRIO'
+       , '1.650.555.0152'
+-      , TO_DATE('07-02-2017', 'dd-MM-yyyy')
++      , DATE '2017-02-07'
+       , 'SH_CLERK'
+       , 3000
+       , NULL
+@@ -2041,7 +2054,7 @@
+       , 'Chung'
+       , 'KCHUNG'
+       , '1.650.555.0153'
+-      , TO_DATE('14-06-2015', 'dd-MM-yyyy')
++      , DATE '2015-06-14'
+       , 'SH_CLERK'
+       , 3800
+       , NULL
+@@ -2055,7 +2068,7 @@
+       , 'Dilly'
+       , 'JDILLY'
+       , '1.650.555.0154'
+-      , TO_DATE('13-08-2015', 'dd-MM-yyyy')
++      , DATE '2015-08-13'
+       , 'SH_CLERK'
+       , 3600
+       , NULL
+@@ -2069,7 +2082,7 @@
+       , 'Venzl'
+       , 'TVENZL'
+       , '1.650.555.0155'
+-      , TO_DATE('11-07-2016', 'dd-MM-yyyy')
++      , DATE '2016-07-11'
+       , 'SH_CLERK'
+       , 2900
+       , NULL
+@@ -2083,7 +2096,7 @@
+       , 'Perkins'
+       , 'RPERKINS'
+       , '1.650.555.0156'
+-      , TO_DATE('19-12-2017', 'dd-MM-yyyy')
++      , DATE '2017-12-19'
+       , 'SH_CLERK'
+       , 2500
+       , NULL
+@@ -2097,7 +2110,7 @@
+       , 'Bell'
+       , 'SBELL'
+       , '1.650.555.0157'
+-      , TO_DATE('04-02-2014', 'dd-MM-yyyy')
++      , DATE '2014-02-04'
+       , 'SH_CLERK'
+       , 4000
+       , NULL
+@@ -2111,7 +2124,7 @@
+       , 'Everett'
+       , 'BEVERETT'
+       , '1.650.555.0158'
+-      , TO_DATE('03-03-2015', 'dd-MM-yyyy')
++      , DATE '2015-03-03'
+       , 'SH_CLERK'
+       , 3900
+       , NULL
+@@ -2125,7 +2138,7 @@
+       , 'McLeod'
+       , 'SMCLEOD'
+       , '1.650.555.0159'
+-      , TO_DATE('01-07-2016', 'dd-MM-yyyy')
++      , DATE '2016-07-01'
+       , 'SH_CLERK'
+       , 3200
+       , NULL
+@@ -2139,7 +2152,7 @@
+       , 'Jones'
+       , 'VJONES'
+       , '1.650.555.0160'
+-      , TO_DATE('17-03-2017', 'dd-MM-yyyy')
++      , DATE '2017-03-17'
+       , 'SH_CLERK'
+       , 2800
+       , NULL
+@@ -2153,7 +2166,7 @@
+       , 'Walsh'
+       , 'AWALSH'
+       , '1.650.555.0161'
+-      , TO_DATE('24-04-2016', 'dd-MM-yyyy')
++      , DATE '2016-04-24'
+       , 'SH_CLERK'
+       , 3100
+       , NULL
+@@ -2167,7 +2180,7 @@
+       , 'Feeney'
+       , 'KFEENEY'
+       , '1.650.555.0162'
+-      , TO_DATE('23-05-2016', 'dd-MM-yyyy')
++      , DATE '2016-05-23'
+       , 'SH_CLERK'
+       , 3000
+       , NULL
+@@ -2181,7 +2194,7 @@
+       , 'OConnell'
+       , 'DOCONNEL'
+       , '1.650.555.0163'
+-      , TO_DATE('21-06-2017', 'dd-MM-yyyy')
++      , DATE '2017-06-21'
+       , 'SH_CLERK'
+       , 2600
+       , NULL
+@@ -2195,7 +2208,7 @@
+       , 'Grant'
+       , 'DGRANT'
+       , '1.650.555.0164'
+-      , TO_DATE('13-01-2018', 'dd-MM-yyyy')
++      , DATE '2018-01-13'
+       , 'SH_CLERK'
+       , 2600
+       , NULL
+@@ -2209,7 +2222,7 @@
+       , 'Whalen'
+       , 'JWHALEN'
+       , '1.515.555.0165'
+-      , TO_DATE('17-09-2013', 'dd-MM-yyyy')
++      , DATE '2013-09-17'
+       , 'AD_ASST'
+       , 4400
+       , NULL
+@@ -2223,7 +2236,7 @@
+       , 'Martinez'
+       , 'MMARTINE'
+       , '1.515.555.0166'
+-      , TO_DATE('17-02-2014', 'dd-MM-yyyy')
++      , DATE '2014-02-17'
+       , 'MK_MAN'
+       , 13000
+       , NULL
+@@ -2237,7 +2250,7 @@
+       , 'Davis'
+       , 'PDAVIS'
+       , '1.603.555.0167'
+-      , TO_DATE('17-08-2015', 'dd-MM-yyyy')
++      , DATE '2015-08-17'
+       , 'MK_REP'
+       , 6000
+       , NULL
+@@ -2251,7 +2264,7 @@
+       , 'Jacobs'
+       , 'SJACOBS'
+       , '1.515.555.0168'
+-      , TO_DATE('07-06-2012', 'dd-MM-yyyy')
++      , DATE '2012-06-07'
+       , 'HR_REP'
+       , 6500
+       , NULL
+@@ -2265,7 +2278,7 @@
+       , 'Brown'
+       , 'HBROWN'
+       , '1.515.555.0169'
+-      , TO_DATE('07-06-2012', 'dd-MM-yyyy')
++      , DATE '2012-06-07'
+       , 'PR_REP'
+       , 10000
+       , NULL
+@@ -2279,7 +2292,7 @@
+       , 'Higgins'
+       , 'SHIGGINS'
+       , '1.515.555.0170'
+-      , TO_DATE('07-06-2012', 'dd-MM-yyyy')
++      , DATE '2012-06-07'
+       , 'AC_MGR'
+       , 12008
+       , NULL
+@@ -2293,7 +2306,7 @@
+       , 'Gietz'
+       , 'WGIETZ'
+       , '1.515.555.0171'
+-      , TO_DATE('07-06-2012', 'dd-MM-yyyy')
++      , DATE '2012-06-07'
+       , 'AC_ACCOUNT'
+       , 8300
+       , NULL
+@@ -2307,79 +2320,84 @@
+ 
+ Prompt ****** Populating JOB_HISTORY table ....
+ 
++-- MIGRATION: TO_DATE('dd-mm-yyyy', 'dd-MM-yyyy') -> DATE 'yyyy-mm-dd' in every row (127x).
++--   11.8 has no TO_DATE (probe F14), and a shim cannot be shared with 13.0, where TO_DATE
++--   is a native keyword and CREATE FUNCTION to_date is a syntax error. The literal is
++--   exact, and also valid Oracle (probe F13).
++
+ BEGIN
+   INSERT INTO job_history
+   VALUES (102
+-       , TO_DATE('13-01-2011', 'dd-MM-yyyy')
+-       , TO_DATE('24-07-2016', 'dd-MM-yyyy')
++       , DATE '2011-01-13'
++       , DATE '2016-07-24'
+        , 'IT_PROG'
+        , 60);
+ 
+   INSERT INTO job_history
+   VALUES (101
+-       , TO_DATE('21-09-2007', 'dd-MM-yyyy')
+-       , TO_DATE('27-10-2011', 'dd-MM-yyyy')
++       , DATE '2007-09-21'
++       , DATE '2011-10-27'
+        , 'AC_ACCOUNT'
+        , 110);
+ 
+   INSERT INTO job_history
+   VALUES (101
+-       , TO_DATE('28-10-2011', 'dd-MM-yyyy')
+-       , TO_DATE('15-03-2015', 'dd-MM-yyyy')
++       , DATE '2011-10-28'
++       , DATE '2015-03-15'
+        , 'AC_MGR'
+        , 110);
+ 
+   INSERT INTO job_history
+   VALUES (201
+-       , TO_DATE('17-02-2014', 'dd-MM-yyyy')
+-       , TO_DATE('19-12-2017', 'dd-MM-yyyy')
++       , DATE '2014-02-17'
++       , DATE '2017-12-19'
+        , 'MK_REP'
+        , 20);
+ 
+   INSERT INTO job_history
+   VALUES  (114
+-      , TO_DATE('24-03-2016', 'dd-MM-yyyy')
+-      , TO_DATE('31-12-2017', 'dd-MM-yyyy')
++      , DATE '2016-03-24'
++      , DATE '2017-12-31'
+       , 'ST_CLERK'
+       , 50
+       );
+ 
+   INSERT INTO job_history
+   VALUES  (122
+-      , TO_DATE('01-01-2017', 'dd-MM-yyyy')
+-      , TO_DATE('31-12-2017', 'dd-MM-yyyy')
++      , DATE '2017-01-01'
++      , DATE '2017-12-31'
+       , 'ST_CLERK'
+       , 50
+       );
+ 
+   INSERT INTO job_history
+   VALUES  (200
+-      , TO_DATE('17-09-2005', 'dd-MM-yyyy')
+-      , TO_DATE('17-06-2011', 'dd-MM-yyyy')
++      , DATE '2005-09-17'
++      , DATE '2011-06-17'
+       , 'AD_ASST'
+       , 90
+       );
+ 
+   INSERT INTO job_history
+   VALUES  (176
+-      , TO_DATE('24-03-2016', 'dd-MM-yyyy')
+-      , TO_DATE('31-12-2016', 'dd-MM-yyyy')
++      , DATE '2016-03-24'
++      , DATE '2016-12-31'
+       , 'SA_REP'
+       , 80
+       );
+ 
+   INSERT INTO job_history
+   VALUES  (176
+-      , TO_DATE('01-01-2017', 'dd-MM-yyyy')
+-      , TO_DATE('31-12-2017', 'dd-MM-yyyy')
++      , DATE '2017-01-01'
++      , DATE '2017-12-31'
+       , 'SA_MAN'
+       , 80
+       );
+ 
+   INSERT INTO job_history
+   VALUES  (200
+-      , TO_DATE('01-07-2012', 'dd-MM-yyyy')
+-      , TO_DATE('31-12-2016', 'dd-MM-yyyy')
++      , DATE '2012-07-01'
++      , DATE '2016-12-31'
+       , 'AC_ACCOUNT'
+       , 90
+       );
+@@ -2390,7 +2408,12 @@
+ 
+ REM enable integrity constraint to DEPARTMENTS
+ 
++-- MIGRATION: ENABLE CONSTRAINT -> re-add the FK. Like Oracle's ENABLE (VALIDATE), adding it
++--   checks every existing row and fails on an orphan (error 1452 vs ORA-02298).
+ ALTER TABLE departments
+-  ENABLE CONSTRAINT dept_mgr_fk;
++  ADD ( CONSTRAINT dept_mgr_fk
++        FOREIGN KEY (manager_id)
++         REFERENCES employees (employee_id)
++      ) ;
+ 
+ 
