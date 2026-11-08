@@ -864,6 +864,142 @@
       "oracle": "1 2",
       "mariadb_output": "",
       "mariadb_error": "-------------- | SELECT * FROM t PIVOT (SUM(v) FOR k IN ('a' AS a, 'b' AS b)) | -------------- |  | ERROR 1064 (42000) at line 7: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '(SUM(v) FOR k IN ('a' AS a, 'b' AS b))' at line 1"
+    },
+    {
+      "id": "T13",
+      "feature": "Named inline NOT NULL  col t CONSTRAINT c NOT NULL",
+      "used_in": "hr: all 7 tables",
+      "oracle": "table created; insert fails ORA-01400",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TABLE t (a NUMBER CONSTRAINT t_a_nn NOT NULL) | -------------- |  | ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'NOT NULL)' at line 1 | -------------- | INSERT INTO t VALUES (NULL) | -------------- |  | ERROR 1146 (42S02) at line 5: Table 'probe.t' doesn't exist"
+    },
+    {
+      "id": "T14",
+      "feature": "CREATE TABLE ... ORGANIZATION INDEX",
+      "used_in": "hr: countries",
+      "oracle": "table created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TABLE t (a CHAR(2) NOT NULL, CONSTRAINT t_pk PRIMARY KEY (a)) ORGANIZATION INDEX | -------------- |  | ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'INDEX' at line 1"
+    },
+    {
+      "id": "T15",
+      "feature": "CREATE UNIQUE INDEX x, then ADD CONSTRAINT x PRIMARY KEY uses it",
+      "used_in": "hr: 6 tables",
+      "oracle": "1 (the PK reuses the index)",
+      "mariadb_output": "2",
+      "mariadb_error": ""
+    },
+    {
+      "id": "T16",
+      "feature": "REFERENCES t without a column list (= its PK)",
+      "used_in": "hr: employees, job_history",
+      "oracle": "table created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE TABLE c (pid NUMBER, CONSTRAINT c_fk FOREIGN KEY (pid) REFERENCES p) | -------------- |  | ERROR 1005 (HY000) at line 5: Can't create table `probe`.`c` (errno: 150 \"Foreign key constraint is incorrectly formed\")"
+    },
+    {
+      "id": "T17",
+      "feature": "ALTER TABLE ADD ( PK, self-referencing FK ) in one statement",
+      "used_in": "hr: employees",
+      "oracle": "table altered",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | ALTER TABLE t ADD ( CONSTRAINT t_pk PRIMARY KEY (id), CONSTRAINT t_fk FOREIGN KEY (mgr) REFERENCES t (id) ) | -------------- |  | ERROR 1005 (HY000) at line 5: Can't create table `probe`.`t` (errno: 150 \"Foreign key constraint is incorrectly formed\")"
+    },
+    {
+      "id": "T18",
+      "feature": "ALTER TABLE ... DISABLE / ENABLE CONSTRAINT",
+      "used_in": "hr_populate: dept_mgr_fk",
+      "oracle": "table altered",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | ALTER TABLE c DISABLE CONSTRAINT c_fk | -------------- |  | ERROR 1064 (42000) at line 7: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'CONSTRAINT c_fk' at line 1"
+    },
+    {
+      "id": "T18b",
+      "feature": "Re-enabling FK checks validates rows loaded meanwhile",
+      "used_in": "hr_populate: dept_mgr_fk",
+      "oracle": "ENABLE fails ORA-02298 on the orphan",
+      "mariadb_output": "1",
+      "mariadb_error": "-------------- | ALTER TABLE c ADD ( CONSTRAINT c_fk FOREIGN KEY (pid) REFERENCES p (id) ) | -------------- |  | ERROR 1452 (23000) at line 17: Cannot add or update a child row: a foreign key constraint fails (\"probe\".\"#sql-alter-1-5c8\", CONSTRAINT \"c_fk\" FOREIGN KEY (\"pid\") REFERENCES \"p\" (\"id\"))"
+    },
+    {
+      "id": "T19",
+      "feature": "CREATE SEQUENCE ... MAXVALUE NOCACHE NOCYCLE, then past MAXVALUE",
+      "used_in": "hr: locations_seq",
+      "oracle": "9800 / 9900 / ORA-08004",
+      "mariadb_output": "9800 / 9900",
+      "mariadb_error": "ERROR 4084 (HY000) at line 9: Sequence 'probe.s' has run out"
+    },
+    {
+      "id": "T20",
+      "feature": "COMMENT ON TABLE / COLUMN",
+      "used_in": "hr: all tables",
+      "oracle": "comment created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | COMMENT ON TABLE t IS 'x' | -------------- |  | ERROR 1064 (42000) at line 5: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON TABLE t IS 'x'' at line 1 | -------------- | COMMENT ON COLUMN t.a IS 'y' | -------------- |  | ERROR 1064 (42000) at line 7: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'ON COLUMN t.a IS 'y'' at line 1"
+    },
+    {
+      "id": "T21",
+      "feature": "NUMBER(2,2): 0.994 rounds, 1 is out of range",
+      "used_in": "hr: employees.commission_pct",
+      "oracle": "0.99; second insert fails ORA-01438",
+      "mariadb_output": "0.99 / 0.99",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F14",
+      "feature": "TO_DATE(str, 'dd-MM-yyyy')",
+      "used_in": "hr_populate: 127 rows",
+      "oracle": "2013-06-17",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | SELECT TO_DATE('17-06-2013', 'dd-MM-yyyy') FROM DUAL | -------------- |  | ERROR 1305 (42000) at line 3: FUNCTION probe.TO_DATE does not exist"
+    },
+    {
+      "id": "F14b",
+      "feature": "CREATE FUNCTION to_date (user shim)",
+      "used_in": "hr: shim not possible on 13.0",
+      "oracle": "function created",
+      "mariadb_output": "",
+      "mariadb_error": ""
+    },
+    {
+      "id": "F15",
+      "feature": "TO_CHAR(d, 'DY') IN ('SAT','SUN') under a binary collation",
+      "used_in": "hr: secure_dml",
+      "oracle": "SAT 1",
+      "mariadb_output": "Sat 0",
+      "mariadb_error": ""
+    },
+    {
+      "id": "D4",
+      "feature": "CREATE VIEW ... WITH READ ONLY",
+      "used_in": "hr: emp_details_view",
+      "oracle": "view created",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | CREATE VIEW v AS SELECT a FROM t WITH READ ONLY | -------------- |  | ERROR 1064 (42000) at line 5: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'READ ONLY' at line 1"
+    },
+    {
+      "id": "D4b",
+      "feature": "Join view updatable without READ ONLY; ALGORITHM=TEMPTABLE is not",
+      "used_in": "hr: emp_details_view",
+      "oracle": "(READ ONLY view) ORA-42399 on UPDATE",
+      "mariadb_output": "6",
+      "mariadb_error": "-------------- | UPDATE v2 SET s = 7 | -------------- |  | ERROR 1288 (HY000) at line 19: The target table v2 of the UPDATE is not updatable"
+    },
+    {
+      "id": "D5",
+      "feature": "ALTER SESSION SET NLS_LANGUAGE",
+      "used_in": "hr_populate, hr_install",
+      "oracle": "session altered",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | ALTER SESSION SET NLS_LANGUAGE=American | -------------- |  | ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'SESSION SET NLS_LANGUAGE=American' at line 1"
+    },
+    {
+      "id": "R8",
+      "feature": "ALTER TRIGGER ... DISABLE",
+      "used_in": "hr: secure_employees",
+      "oracle": "trigger altered",
+      "mariadb_output": "",
+      "mariadb_error": "-------------- | ALTER TRIGGER tr DISABLE | -------------- |  | ERROR 1064 (42000) at line 7: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'TRIGGER tr DISABLE' at line 1"
     }
   ]
 }

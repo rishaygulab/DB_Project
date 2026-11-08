@@ -340,6 +340,67 @@ PROBES = [
     ("X23", "PIVOT", "not in corpus",
      "CREATE TABLE t (k VARCHAR2(5), v NUMBER)$$INSERT INTO t VALUES ('a',1),('b',2)$$"
      "SELECT * FROM t PIVOT (SUM(v) FOR k IN ('a' AS a, 'b' AS b))$$", "1 2"),
+    # ---------------- added for the HR sample schema (corpus/oracle/hr) ----------------
+    ("T13", "Named inline NOT NULL  col t CONSTRAINT c NOT NULL", "hr: all 7 tables",
+     "CREATE TABLE t (a NUMBER CONSTRAINT t_a_nn NOT NULL)$$INSERT INTO t VALUES (NULL)$$",
+     "table created; insert fails ORA-01400"),
+    ("T14", "CREATE TABLE ... ORGANIZATION INDEX", "hr: countries",
+     "CREATE TABLE t (a CHAR(2) NOT NULL, CONSTRAINT t_pk PRIMARY KEY (a)) ORGANIZATION INDEX$$",
+     "table created"),
+    ("T15", "CREATE UNIQUE INDEX x, then ADD CONSTRAINT x PRIMARY KEY uses it", "hr: 6 tables",
+     "CREATE TABLE t (a NUMBER NOT NULL)$$CREATE UNIQUE INDEX t_pk ON t (a)$$"
+     "ALTER TABLE t ADD ( CONSTRAINT t_pk PRIMARY KEY (a) )$$"
+     "SELECT COUNT(DISTINCT index_name) FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='t'$$",
+     "1 (the PK reuses the index)"),
+    ("T16", "REFERENCES t without a column list (= its PK)", "hr: employees, job_history",
+     "CREATE TABLE p (id NUMBER PRIMARY KEY)$$CREATE TABLE c (pid NUMBER, CONSTRAINT c_fk FOREIGN KEY (pid) REFERENCES p)$$",
+     "table created"),
+    ("T17", "ALTER TABLE ADD ( PK, self-referencing FK ) in one statement", "hr: employees",
+     "CREATE TABLE t (id NUMBER NOT NULL, mgr NUMBER)$$"
+     "ALTER TABLE t ADD ( CONSTRAINT t_pk PRIMARY KEY (id), CONSTRAINT t_fk FOREIGN KEY (mgr) REFERENCES t (id) )$$",
+     "table altered"),
+    ("T18", "ALTER TABLE ... DISABLE / ENABLE CONSTRAINT", "hr_populate: dept_mgr_fk",
+     "CREATE TABLE p (id NUMBER PRIMARY KEY)$$CREATE TABLE c (pid NUMBER, CONSTRAINT c_fk FOREIGN KEY (pid) REFERENCES p (id))$$"
+     "ALTER TABLE c DISABLE CONSTRAINT c_fk$$",
+     "table altered"),
+    ("T18b", "Re-enabling FK checks validates rows loaded meanwhile", "hr_populate: dept_mgr_fk",
+     "CREATE TABLE p (id NUMBER PRIMARY KEY)$$CREATE TABLE c (pid NUMBER, CONSTRAINT c_fk FOREIGN KEY (pid) REFERENCES p (id))$$"
+     "SET FOREIGN_KEY_CHECKS = 0$$INSERT INTO c VALUES (99)$$SET FOREIGN_KEY_CHECKS = 1$$SELECT COUNT(*) FROM c$$"
+     "ALTER TABLE c DROP FOREIGN KEY c_fk$$ALTER TABLE c ADD ( CONSTRAINT c_fk FOREIGN KEY (pid) REFERENCES p (id) )$$",
+     "ENABLE fails ORA-02298 on the orphan"),
+    ("T19", "CREATE SEQUENCE ... MAXVALUE NOCACHE NOCYCLE, then past MAXVALUE", "hr: locations_seq",
+     "CREATE SEQUENCE s START WITH 9800 INCREMENT BY 100 MAXVALUE 9900 NOCACHE NOCYCLE$$"
+     "SELECT s.NEXTVAL FROM DUAL$$SELECT s.NEXTVAL FROM DUAL$$SELECT s.NEXTVAL FROM DUAL$$",
+     "9800 / 9900 / ORA-08004"),
+    ("T20", "COMMENT ON TABLE / COLUMN", "hr: all tables",
+     "CREATE TABLE t (a NUMBER)$$COMMENT ON TABLE t IS 'x'$$COMMENT ON COLUMN t.a IS 'y'$$",
+     "comment created"),
+    ("T21", "NUMBER(2,2): 0.994 rounds, 1 is out of range", "hr: employees.commission_pct",
+     "CREATE TABLE t (a NUMBER(2,2))$$INSERT INTO t VALUES (0.994)$$INSERT INTO t VALUES (1)$$SELECT a FROM t$$",
+     "0.99; second insert fails ORA-01438"),
+    ("F14", "TO_DATE(str, 'dd-MM-yyyy')", "hr_populate: 127 rows",
+     "SELECT TO_DATE('17-06-2013', 'dd-MM-yyyy') FROM DUAL$$", "2013-06-17"),
+    ("F14b", "CREATE FUNCTION to_date (user shim)", "hr: shim not possible on 13.0",
+     "CREATE FUNCTION to_date(s VARCHAR2, f VARCHAR2) RETURN DATE IS BEGIN RETURN NULL; END;$$",
+     "function created"),
+    ("F15", "TO_CHAR(d, 'DY') IN ('SAT','SUN') under a binary collation", "hr: secure_dml",
+     "SELECT TO_CHAR(DATE '2026-11-07', 'DY'), "
+     "CASE WHEN TO_CHAR(DATE '2026-11-07', 'DY') COLLATE utf8mb4_nopad_bin IN ('SAT', 'SUN') THEN 1 ELSE 0 END FROM DUAL$$",
+     "SAT 1"),
+    ("D4", "CREATE VIEW ... WITH READ ONLY", "hr: emp_details_view",
+     "CREATE TABLE t (a NUMBER)$$CREATE VIEW v AS SELECT a FROM t WITH READ ONLY$$", "view created"),
+    ("D4b", "Join view updatable without READ ONLY; ALGORITHM=TEMPTABLE is not", "hr: emp_details_view",
+     "CREATE TABLE a (id NUMBER PRIMARY KEY, s NUMBER)$$CREATE TABLE b (id NUMBER PRIMARY KEY)$$"
+     "INSERT INTO a VALUES (1, 5)$$INSERT INTO b VALUES (1)$$"
+     "CREATE VIEW v1 AS SELECT a.id, a.s FROM a, b WHERE a.id = b.id$$"
+     "CREATE ALGORITHM=TEMPTABLE VIEW v2 AS SELECT a.id, a.s FROM a, b WHERE a.id = b.id$$"
+     "UPDATE v1 SET s = 6$$SELECT s FROM a$$UPDATE v2 SET s = 7$$",
+     "(READ ONLY view) ORA-42399 on UPDATE"),
+    ("D5", "ALTER SESSION SET NLS_LANGUAGE", "hr_populate, hr_install",
+     "ALTER SESSION SET NLS_LANGUAGE=American$$", "session altered"),
+    ("R8", "ALTER TRIGGER ... DISABLE", "hr: secure_employees",
+     "CREATE TABLE t (a NUMBER)$$CREATE TRIGGER tr BEFORE INSERT ON t FOR EACH ROW BEGIN NULL; END;$$"
+     "ALTER TRIGGER tr DISABLE$$", "trigger altered"),
 ]
 
 
